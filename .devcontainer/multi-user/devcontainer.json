@@ -1,8 +1,8 @@
 {
   "name": "ChipCraft Lab — Multi-User Server",
-  "image": "ubuntu:22.04",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
   "forwardPorts": [80, 6081, 6082, 6083, 6084, 6085],
   "portsAttributes": {
