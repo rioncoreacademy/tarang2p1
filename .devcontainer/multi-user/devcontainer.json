@@ -1,0 +1,19 @@
+{
+  "name": "ChipCraft Lab — Multi-User Server",
+  "image": "ubuntu:22.04",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "forwardPorts": [80, 6081, 6082, 6083, 6084, 6085],
+  "portsAttributes": {
+    "80":   {"label": "ChipCraft Portal",  "onAutoForward": "openBrowser", "visibility": "public"},
+    "6081": {"label": "Lab Desktop 1", "visibility": "public"},
+    "6082": {"label": "Lab Desktop 2", "visibility": "public"},
+    "6083": {"label": "Lab Desktop 3", "visibility": "public"},
+    "6084": {"label": "Lab Desktop 4", "visibility": "public"},
+    "6085": {"label": "Lab Desktop 5", "visibility": "public"}
+  },
+  "postCreateCommand": "cd ${containerWorkspaceFolder} && cp .env.example .env && docker compose build",
+  "postStartCommand": "cd ${containerWorkspaceFolder} && docker compose up -d api",
+  "remoteUser": "root"
+}

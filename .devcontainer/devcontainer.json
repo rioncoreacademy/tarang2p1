@@ -1,0 +1,14 @@
+{
+  "name": "ChipCraft Lab — Digital Design & VLSI",
+  "image": "ghcr.io/rbabu2k/chipcraft:latest",
+  "forwardPorts": [6080],
+  "portsAttributes": {
+    "6080": {
+      "label": "Lab Desktop (noVNC)",
+      "onAutoForward": "openBrowser",
+      "protocol": "http"
+    }
+  },
+  "postStartCommand": "bash ${containerWorkspaceFolder}/.devcontainer/single-user/start.sh",
+  "remoteUser": "ubuntu"
+}

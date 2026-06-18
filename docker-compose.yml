@@ -1,0 +1,29 @@
+name: nvr
+
+services:
+
+  api:
+    build: ./api
+    ports:
+      - "80:8000"
+    environment:
+      GITHUB_CLIENT_ID:     ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      TEMPLATE_REPO:        ${TEMPLATE_REPO:-}
+      NOVNC_IMAGE:          ubuntu-novnc:latest
+      VNC_PASSWORD:         ${VNC_PASSWORD:-novnc}
+      CHIPCRAFT_KEY:        ${CHIPCRAFT_KEY}
+      SHARED_PATH:          ${SHARED_PATH:-/data/workspace/project}
+      SESSION_TTL:          ${SESSION_TTL:-14400}
+      PORT_START:           ${PORT_START:-6081}
+      PORT_END:             ${PORT_END:-6180}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  # This service is never started — it exists only so "docker compose build"
+  # produces the ubuntu-novnc:latest image that the API spawns dynamically.
+  novnc:
+    build: .
+    image: ubuntu-novnc:latest
+    profiles: ["build-only"]
