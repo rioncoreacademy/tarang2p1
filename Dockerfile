@@ -31,19 +31,26 @@ RUN apt-get update \
         # Python
         python3 \
         python3-pip \
-        # Verilog simulation (ModelSim replacement)
-        verilator \
+        # GTKWave waveform viewer
         gtkwave \
-        # C compiler for microcontrollers (SDCC kept)
+        # C compiler for microcontrollers
         sdcc \
-        # Build tools
+        # Build tools (also needed for Verilator build)
         build-essential \
+        autoconf \
         bison \
         flex \
+        libfl2 \
+        libfl-dev \
+        zlib1g-dev \
+        help2man \
+        libelf-dev \
         texinfo \
         libboost-dev \
         git \
-        # 32-bit libs (needed by some EDA tools)
+        perl \
+        ccache \
+        # 32-bit libs
         libc6:i386 \
         libncurses5:i386 \
         libstdc++6:i386 \
@@ -54,6 +61,15 @@ RUN apt-get update \
         libxext6:i386 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Build Verilator latest stable from source
+RUN git clone https://github.com/verilator/verilator --branch stable --depth 1 /tmp/verilator \
+    && cd /tmp/verilator \
+    && autoconf \
+    && ./configure \
+    && make -j$(nproc) \
+    && make install \
+    && rm -rf /tmp/verilator
 
 RUN useradd -m -s /bin/bash ubuntu
 
