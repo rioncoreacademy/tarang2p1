@@ -62,14 +62,12 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Build Verilator latest stable from source
-RUN git clone https://github.com/verilator/verilator --branch stable --depth 1 /tmp/verilator \
-    && cd /tmp/verilator \
-    && autoconf \
-    && ./configure \
-    && make -j$(nproc) \
-    && make install \
-    && rm -rf /tmp/verilator
+# Install latest Verilator via OSS CAD Suite (pre-built binaries — no compilation needed)
+RUN LATEST_URL=$(curl -s https://api.github.com/repos/YosysHQ/oss-cad-suite-build/releases/latest \
+        | grep -o 'https://[^"]*linux-x64[^"]*\.tgz' | head -1) \
+    && curl -L "$LATEST_URL" | tar xz -C /opt/ \
+    && ln -sf /opt/oss-cad-suite/bin/verilator /usr/local/bin/verilator \
+    && ln -sf /opt/oss-cad-suite/bin/gtkwave  /usr/local/bin/gtkwave
 
 RUN useradd -m -s /bin/bash ubuntu
 
