@@ -1,8 +1,6 @@
 {
   "name": "ChipCraft Lab — Digital Design & VLSI",
-  "build": {
-    "dockerfile": "../../Dockerfile"
-  },
+  "image": "ghcr.io/narrave/chipcraft:latest",
   "forwardPorts": [6080],
   "portsAttributes": {
     "6080": {
