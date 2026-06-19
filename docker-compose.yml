@@ -9,7 +9,7 @@ services:
     environment:
       GH_CLIENT_ID:     ${GH_CLIENT_ID}
       GH_CLIENT_SECRET: ${GH_CLIENT_SECRET}
-      TEMPLATE_REPO:        ${TEMPLATE_REPO:-}
+      TEMPLATE_REPO:        ${TEMPLATE_REPO:-narrave/chipcraft-lab-files}
       NOVNC_IMAGE:          ubuntu-novnc:latest
       VNC_PASSWORD:         ${VNC_PASSWORD:-novnc}
       CHIPCRAFT_KEY:        ${CHIPCRAFT_KEY}
