@@ -28,37 +28,40 @@ sudo iptables -P OUTPUT DROP               # block everything else
 echo "Egress firewall applied."
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Kill any leftover VNC lock from a previous run
-vncserver -kill :1 2>/dev/null || true
-rm -f /tmp/.X1-lock /tmp/.X11-unix/X1 2>/dev/null || true
-
 mkdir -p "$HOME/.vnc" /tmp/runtime-ubuntu
 chmod 700 /tmp/runtime-ubuntu
 touch "$HOME/.Xresources"
 
-# TigerVNC vncpasswd expects password entered twice (password + confirm).
-# The -f flag writes the encrypted result to stdout.
-printf '%s\n%s\n' "$VNC_PASSWORD" "$VNC_PASSWORD" | vncpasswd -f > "$HOME/.vnc/passwd"
+# Create VNC password file — write encrypted password to file directly
+printf '%s\n%s\n' "$VNC_PASSWORD" "$VNC_PASSWORD" | vncpasswd "$HOME/.vnc/passwd"
 chmod 600 "$HOME/.vnc/passwd"
 
-cat > "$HOME/.vnc/xstartup" <<'EOF'
-#!/usr/bin/env bash
-export XDG_RUNTIME_DIR=/tmp/runtime-ubuntu
-[ -r "$HOME/.Xresources" ] && xrdb "$HOME/.Xresources" 2>/dev/null
-exec dbus-launch --exit-with-session startxfce4
-EOF
-chmod +x "$HOME/.vnc/xstartup"
+# Clean up any leftover lock files from a previous run
+rm -f /tmp/.X1-lock /tmp/.X11-unix/X1 2>/dev/null || true
 
-# Start VNC — TigerVNC flags:
-# -localhost no      : accept connections from websockify (not loopback-only)
-# -SecurityTypes VncAuth : explicitly require password auth (needed with -localhost no)
-# -PasswordFile      : path to the passwd file created above
-# -noclipboard       : block clipboard sync between container and browser
-vncserver :1 -geometry "$VNC_GEOMETRY" -depth "$VNC_DEPTH" -rfbport "$VNC_PORT" \
-    -localhost no \
+# Start Xvnc directly (bypass the vncserver wrapper script which drops some flags).
+# -rfbauth    : explicit path to the password file
+# -localhost no : accept connections from websockify (not loopback-only)
+# -noclipboard  : block clipboard sync between container and browser (TigerVNC flag)
+Xvnc :1 \
+    -geometry   "$VNC_GEOMETRY" \
+    -depth      "$VNC_DEPTH" \
+    -rfbport    "$VNC_PORT" \
+    -rfbauth    "$HOME/.vnc/passwd" \
     -SecurityTypes VncAuth \
-    -PasswordFile "$HOME/.vnc/passwd" \
-    -noclipboard
+    -localhost  no \
+    -noclipboard \
+    &
+
+# Wait for Xvnc to be ready before starting the desktop session
+for i in $(seq 1 15); do
+    ss -tlnp 2>/dev/null | grep -q "$VNC_PORT" && break
+    sleep 1
+done
+
+# Start XFCE desktop session on display :1
+DISPLAY=:1 XDG_RUNTIME_DIR=/tmp/runtime-ubuntu \
+    dbus-launch --exit-with-session startxfce4 >> /tmp/xfce.log 2>&1 &
 
 # Wait for VNC to be ready
 for i in $(seq 1 15); do
