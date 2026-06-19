@@ -154,6 +154,14 @@ find "$WORK_DIR" -maxdepth 1 -type f \
         echo "[lab] Copied : $(basename "$f")"
     done
 
+# Block git inside LAB_DIR (tmpfs) so students cannot push decrypted .v files.
+# The git repo lives in WORK_DIR (~/lab) which only has .v.enc files.
+rm -rf "$LAB_DIR/.git"
+cat > "$LAB_DIR/.gitignore" << 'GIEOF'
+# Git is disabled in this directory — work with ~/lab for version control
+*.v
+GIEOF
+
 echo "[lab] Watching $LAB_DIR for student saves …"
 
 # ── 4. Watch for saves and re-encrypt ────────────────────────────────────────

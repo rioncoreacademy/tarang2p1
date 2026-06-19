@@ -47,8 +47,9 @@ exec dbus-launch --exit-with-session startxfce4
 EOF
 chmod +x "$HOME/.vnc/xstartup"
 
-# Start VNC
-vncserver :1 -geometry "$VNC_GEOMETRY" -depth "$VNC_DEPTH" -rfbport "$VNC_PORT"
+# Start VNC — NeverShared + no clipboard sync to/from noVNC client
+vncserver :1 -geometry "$VNC_GEOMETRY" -depth "$VNC_DEPTH" -rfbport "$VNC_PORT" \
+    -noclipboard
 
 # Wait for VNC to be ready
 for i in $(seq 1 15); do
