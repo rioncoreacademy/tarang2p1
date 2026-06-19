@@ -339,12 +339,34 @@ PORT_START=6081
 PORT_END=6180
 ```
 
-### 2. Build and start
+### 2. Get the Docker image (GitHub Actions builds it automatically)
+
+Every push to `master` that touches `Dockerfile`, `entrypoint.sh`, or
+`tools/decrypt_watch.sh` triggers **GitHub Actions → Publish Docker Image**
+which builds and pushes `ghcr.io/narrave/chipcraft:latest` automatically.
+
+You never need to build on the server. Just pull the pre-built image:
 
 ```bash
+# Pull the image GitHub Actions already built
+docker pull ghcr.io/narrave/chipcraft:latest
+
+# Tag it as the name the API expects
+docker tag ghcr.io/narrave/chipcraft:latest ubuntu-novnc:latest
+
+# Start only the API service (the student containers are spawned dynamically)
 cd NVR
-docker compose build   # builds ubuntu-novnc:latest image
-docker compose up -d   # starts the API service
+docker compose up -d
+```
+
+When you push a code change, GitHub Actions rebuilds the image automatically.
+To roll out the new image to the server:
+
+```bash
+docker pull ghcr.io/narrave/chipcraft:latest
+docker tag  ghcr.io/narrave/chipcraft:latest ubuntu-novnc:latest
+# New student containers will use the updated image automatically.
+# Existing running containers are not affected until they are restarted.
 ```
 
 ### 3. Push encrypted lab files
