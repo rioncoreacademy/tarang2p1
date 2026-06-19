@@ -14,7 +14,7 @@ RUN apt-get update \
         # Desktop & VNC
         xfce4 \
         xfce4-terminal \
-        tightvncserver \
+        tigervnc-standalone-server \
         novnc \
         websockify \
         xauth \

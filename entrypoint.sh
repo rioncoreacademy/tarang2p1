@@ -48,8 +48,10 @@ EOF
 chmod +x "$HOME/.vnc/xstartup"
 
 # Start VNC — NeverShared + no clipboard sync to/from noVNC client
+# -localhost no  : TigerVNC defaults to localhost-only; websockify needs to reach it
+# -noclipboard   : TigerVNC flag — blocks clipboard sync between container and browser
 vncserver :1 -geometry "$VNC_GEOMETRY" -depth "$VNC_DEPTH" -rfbport "$VNC_PORT" \
-    -noclipboard
+    -localhost no -noclipboard
 
 # Wait for VNC to be ready
 for i in $(seq 1 15); do
