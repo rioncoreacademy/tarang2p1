@@ -52,11 +52,12 @@ inside the container, but they cannot extract the plaintext or the encryption ke
 |---|---|
 | `tools/encrypt_lab.sh` | Teacher runs this on their PC to encrypt `.v` files |
 | `tools/decrypt_watch.sh` | Runs inside container — decrypts on startup, re-encrypts on save |
+| `tools/watermark.py` | Embeds/reads invisible trailing-space watermark in `.v` files |
+| `tools/detect_leak.sh` | Teacher tool — identifies which student a leaked file came from |
 | `api/main.py` | FastAPI service — GitHub OAuth, container launch, key delivery |
 | `router/app.py` | Simple load balancer across student containers |
 | `Dockerfile` | Builds the student desktop image (XFCE + VNC + Verilator + iverilog) |
-| `entrypoint.sh` | Container startup — starts VNC, noVNC, decrypt_watch |
-| `chipcraft-student/` | Template GitHub repo cloned for each student |
+| `entrypoint.sh` | Container startup — starts VNC, noVNC, egress firewall, decrypt_watch |
 | `.env` | Server-side secrets (never committed, never shared) |
 
 ---
@@ -360,20 +361,104 @@ docker compose up -d   # starts the API service
 
 ---
 
+## File Exfiltration — Possible Attack Paths
+
+Even with decryption protection, a student who can see and run the file might
+try to copy the plaintext out of the container. Here is every known method and
+whether it is blocked:
+
+| Attack method | Blocked? | How |
+|---|---|---|
+| **noVNC clipboard** — copy text from editor via the clipboard button | ✅ Blocked | `-noclipboard` flag on vncserver |
+| **git push decrypted files** from `~/labs/` | ✅ Blocked | No `.git` in `~/labs/`; `*.v` in `.gitignore` |
+| **curl / wget** to paste sites (HTTP/HTTPS) | ✅ Blocked | Egress firewall — only GitHub IPs allowed |
+| **Browser inside VNC** → Google Drive, email, upload | ✅ Blocked | Egress firewall |
+| **docker cp** from host | Admin only | Requires Docker daemon access — students don't have it |
+| **Phone photo / screen recording** | ❌ Cannot block | Watermark identifies the student |
+| **Manual typing** the code out | ❌ Cannot block | Watermark + academic integrity policy |
+
+---
+
+## Watermarking — Tracing Leaked Files
+
+Every decrypted `.v` file receives two watermarks:
+
+### Visible watermark (decoy)
+A comment at the top of the file — obvious, easy to delete:
+```verilog
+// [ChipCraft] Student: @john_student | 2026-06-19
+module counter #( ...
+```
+
+### Invisible watermark (real trap)
+The student's GitHub username is encoded as **binary bits into trailing spaces**
+on each line — completely invisible to readers and editors:
+
+```
+module counter #(·      ← trailing space = bit 1
+    parameter WIDTH = 4 ← no trailing space = bit 0
+)(·                     ← trailing space = bit 1
+    ...                 ← encodes "john_student" across all lines
+```
+
+When the student deletes the visible comment thinking the watermark is gone,
+the invisible one is still present. It survives copy-paste, editor saves,
+and sharing the file online.
+
+### How to detect a leaked file (teacher)
+
+```bash
+# On teacher's PC — works on plain .v or encrypted .v.enc files
+export CHIPCRAFT_KEY="your-secret-key"
+
+bash tools/detect_leak.sh leaked_counter.v
+# → Leaked file : leaked_counter.v
+# → Student     : @john_student
+
+bash tools/detect_leak.sh counter.v.enc   # auto-decrypts first
+# → Leaked file : counter.v.enc
+# → Student     : @john_student
+```
+
+---
+
+## Egress Firewall
+
+Each student container starts with iptables rules that block all outbound
+internet traffic except what the lab needs:
+
+```
+ALLOWED outbound:
+  ├── Loopback (127.0.0.1)
+  ├── Docker internal network (172.x, 10.x)  ← for API key delivery
+  ├── DNS (port 53)
+  └── GitHub IP ranges (port 443 / 22)       ← for git push only
+
+BLOCKED outbound:
+  └── Everything else — paste sites, email, file sharing, cloud storage
+```
+
+Students can still `git push` their encrypted work to their GitHub repo,
+but cannot upload the decrypted `.v` files to any external service.
+
+---
+
 ## Security Summary
 
 ```
 CHIPCRAFT_KEY journey:
-  .env (server)
-    → API container memory
-      → POST /lab-key response (internal network, one-time token, 30s TTL)
+  .env (server, teacher-only access)
+    → API container memory only
+      → POST /lab-key (internal Docker network, one-time token, 30s TTL)
         → bash variable in decrypt_watch.sh (~2 seconds)
-          → openssl stdin (never written to any file)
-            → GONE
+          → openssl stdin  →  GONE
 
 Decrypted .v files:
-  ~/labs/ (tmpfs)  →  exist only while container runs  →  GONE on stop
+  ~/labs/ (tmpfs, RAM only)  →  watermarked  →  GONE when container stops
 
 Encrypted .v.enc files:
-  GitHub repo + ~/lab/ volume  →  safe to store anywhere  →  useless without key
+  GitHub + ~/lab/ volume  →  safe to store anywhere  →  useless without key
+
+If a file leaks:
+  tools/detect_leak.sh  →  reads invisible trailing-space watermark  →  names the student
 ```
