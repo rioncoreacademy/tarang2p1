@@ -6,7 +6,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NOVNC_PORT=6080 \
     VNC_RESOLUTION=1280x720 \
     VNC_COL_DEPTH=24 \
-    CHIPCRAFT_KEY="testkey123" \
     GITHUB_USER="student"
 
 RUN apt-get update \
