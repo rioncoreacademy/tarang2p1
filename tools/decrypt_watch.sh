@@ -52,8 +52,14 @@ if [[ -n "${BOOTSTRAP_TOKEN:-}" ]]; then
     export BOOTSTRAP_TOKEN=""
 fi
 
-# Allow a plaintext LAB_KEY env var as a fallback for local development/testing
-# (never set this in production — it defeats the purpose).
+# Fallback 1: CHIPCRAFT_KEY env var — set as a GitHub Codespace Secret so
+# Codespace containers get the key without needing the API stack.
+if [[ -z "$KEY" && -n "${CHIPCRAFT_KEY:-}" ]]; then
+    echo "[lab] Using CHIPCRAFT_KEY from environment (Codespace secret)." >&2
+    KEY="$CHIPCRAFT_KEY"
+fi
+
+# Fallback 2: LAB_KEY env var — for local development/testing only.
 if [[ -z "$KEY" && -n "${LAB_KEY:-}" ]]; then
     echo "[lab] WARNING: using LAB_KEY env var (not recommended in production)" >&2
     KEY="$LAB_KEY"
