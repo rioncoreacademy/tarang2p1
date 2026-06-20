@@ -80,10 +80,11 @@ RUN echo "ubuntu ALL=(root) NOPASSWD: /sbin/iptables" \
         > /etc/sudoers.d/lab-iptables \
     && chmod 440 /etc/sudoers.d/lab-iptables
 
-# Install latest Verilator + GTKWave via OSS CAD Suite (pre-built binaries)
-RUN LATEST_URL=$(curl -s https://api.github.com/repos/YosysHQ/oss-cad-suite-build/releases/latest \
-        | grep -o 'https://[^"]*linux-x64[^"]*\.tgz' | head -1) \
-    && curl -L "$LATEST_URL" | tar xz -C /opt/
+# Install Verilator + GTKWave via OSS CAD Suite (pinned release)
+# To upgrade: https://github.com/YosysHQ/oss-cad-suite-build/releases
+RUN curl -fSL \
+    "https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2026-06-19/oss-cad-suite-linux-x64-20260619.tgz" \
+    | tar xz -C /opt/
 
 ENV PATH="/opt/oss-cad-suite/bin:$PATH"
 
