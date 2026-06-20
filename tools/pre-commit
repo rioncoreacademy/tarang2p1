@@ -1,0 +1,14 @@
+#!/bin/bash
+# Block any newly added file that is not a .enc file.
+# Modifications to existing tracked files (Makefile, devcontainer) are allowed.
+
+bad=$(git diff --cached --name-only --diff-filter=A | grep -v '\.enc$')
+
+if [ -n "$bad" ]; then
+    echo ""
+    echo "  COMMIT BLOCKED: only .enc files may be added to this repo."
+    echo "  These files were rejected:"
+    printf '    %s\n' $bad
+    echo ""
+    exit 1
+fi
