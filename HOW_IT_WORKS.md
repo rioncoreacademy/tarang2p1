@@ -86,9 +86,9 @@ an environment variable in the container, so `docker inspect` reveals nothing us
 | `mywork/` | chipcraft-lab-files | Student-created work (only `.v.enc` files — auto-encrypted on save) |
 | `Makefile` | chipcraft-lab-files | `make` / `make wave` / `make clean` |
 | `.gitignore` | chipcraft-lab-files | Blocks everything; only `*.enc` and repo infra files allowed |
-| `.devcontainer/setup.sh` | chipcraft-student | Codespace startup — clones lab, fetches key, starts decrypt, installs pre-commit hook |
-| `.devcontainer/hooks/pre-commit` | chipcraft-student | Git hook — blocks any non-`.enc` file from being committed |
+| `.devcontainer/setup.sh` | chipcraft-student | Codespace startup — clones lab, fetches key, starts decrypt, registers pre-commit hook |
 | `.devcontainer/devcontainer.json` | chipcraft-student | Codespace config — image, ports, postAttachCommand |
+| `tools/pre-commit` | chipcraft-lab (image) | Git hook baked into Docker image at `/usr/local/lib/chipcraft-hooks/` — root-owned, students cannot edit |
 
 ---
 
@@ -375,7 +375,7 @@ outside the lab repository.
 | `git clone` | Anywhere | Blocked — `[ChipCraft] git clone is not allowed in this lab.` |
 | `git add` / `git commit` / `git push` | Outside `~/lab/` | Blocked — `[ChipCraft] git is only allowed inside ~/lab/.` |
 | `git add counter.v` (plain `.v`) | Inside `~/lab/` | Silently ignored by `.gitignore` |
-| `git add -f counter.v` then `git commit` | Inside `~/lab/` | Blocked by pre-commit hook — `COMMIT BLOCKED: only .enc files may be added` |
+| `git add -f counter.v` then `git commit` | Inside `~/lab/` | Blocked by pre-commit hook (baked in image, read-only) — `COMMIT BLOCKED: only .enc files may be added` |
 | `git add counter.v.enc` | Inside `~/lab/` | Allowed — encrypted file |
 | `git commit` / `git push` with only `.enc` files | Inside `~/lab/` | Allowed — normal workflow |
 | All other commands (log, diff, status…) | Anywhere | Allowed |
@@ -391,6 +391,17 @@ git push <attacker_repo>    # sends plaintext to their personal repo
 ```
 
 With the wrapper, `git init` exits immediately with an error.
+
+### Pre-commit hook — not editable by students
+
+`setup.sh` registers `~/lab` to use the hook baked into the image:
+
+```bash
+/usr/bin/git -C "$HOME/lab" config core.hooksPath /usr/local/lib/chipcraft-hooks
+```
+
+The hook file is at `/usr/local/lib/chipcraft-hooks/pre-commit` — owned by root,
+not writable by the `ubuntu` user. Students cannot modify or delete it.
 
 ### Internal tools bypass the wrapper
 
@@ -481,6 +492,7 @@ git push
 
 Student-created files are auto-encrypted to `~/lab/mywork/*.v.enc` on every save.
 Only `.enc` files can be committed — the pre-commit hook blocks any plain `.v` or other file type.
+The hook lives in the Docker image at `/usr/local/lib/chipcraft-hooks/pre-commit` (root-owned) so students cannot edit or delete it.
 
 ---
 
