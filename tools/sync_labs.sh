@@ -7,6 +7,11 @@
 # Examples:
 #   bash sync_labs.sh ~/labs/ ~/chipcraft-lab-files/
 #   bash sync_labs.sh /home/user/labs/ /home/user/chipcraft-lab-files/
+#
+# Result:
+#   Creates a parent folder named after source inside destination:
+#   ~/chipcraft-lab-files/labs/adder.v.enc
+#   ~/chipcraft-lab-files/labs/tb/counter.v.enc
 
 if [[ -z "${1:-}" || -z "${2:-}" ]]; then
     echo ""
@@ -17,8 +22,13 @@ if [[ -z "${1:-}" || -z "${2:-}" ]]; then
     exit 1
 fi
 
-SOURCE="$1"
-DEST="$2"
+# Strip trailing slash and get folder name
+SOURCE="${1%/}"
+DEST="${2%/}"
+
+# Parent folder name = basename of source (e.g. "labs")
+PARENT="$(basename "$SOURCE")"
+DEST_FULL="$DEST/$PARENT"
 
 if [[ ! -d "$SOURCE" ]]; then
     echo "ERROR: Source folder not found: $SOURCE"
@@ -31,12 +41,15 @@ if [[ ! -d "$DEST" ]]; then
     exit 1
 fi
 
+# Create parent folder inside destination if it doesn't exist
+mkdir -p "$DEST_FULL"
+
 echo ""
 echo "========================================"
 echo "  ChipCraft Lab — Sync .enc Files"
 echo "========================================"
-echo "  From : $SOURCE"
-echo "  To   : $DEST"
+echo "  From   : $SOURCE/"
+echo "  To     : $DEST_FULL/"
 echo ""
 
 rsync -av --delete \
@@ -44,7 +57,7 @@ rsync -av --delete \
     --include="*.enc" \
     --exclude="*" \
     "$SOURCE/" \
-    "$DEST/"
+    "$DEST_FULL/"
 
 echo ""
 echo "========================================"

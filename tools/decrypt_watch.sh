@@ -21,12 +21,16 @@
 #   CHIPCRAFT_KEY     – direct key (Codespace mode)
 #   LAB_DIR           – decrypted files destination (default: /home/ubuntu/labs)
 #   WORK_DIR          – encrypted source files (default: /home/ubuntu/lab)
+#   SOURCE_SUBDIR     – subfolder inside WORK_DIR that holds .enc files (e.g. "labs")
+#                       When set, that folder is stripped from the output path so
+#                       lab/labs/adder.v.enc → labs/adder.v  (not labs/labs/adder.v)
 
 set -euo pipefail
 
 API_URL="${API_INTERNAL_URL:-http://api:8000}"
 LAB_DIR="${LAB_DIR:-/home/ubuntu/labs}"
 WORK_DIR="${WORK_DIR:-/home/ubuntu/lab}"
+SOURCE_SUBDIR="${SOURCE_SUBDIR:-}"   # e.g. "labs" — auto-detected if empty
 
 # Cloudflare Worker URL — key never stored in env var, not visible in docker inspect
 WORKER_URL="https://chipcraft-key.nagajyothibonthagorla.workers.dev"
@@ -100,10 +104,10 @@ echo "[lab] Key obtained."
 
 decrypt_file() {
     local enc="$1"
-    # Compute relative path from WORK_DIR and strip .enc
-    # e.g. ~/lab/subfolder/notes.pdf.enc → subfolder/notes.pdf
+    # Compute relative path from SEARCH_DIR and strip .enc
+    # e.g. ~/lab/labs/tb/counter.v.enc → tb/counter.v  (labs/ is stripped)
     local rel
-    rel="${enc#$WORK_DIR/}"              # strip WORK_DIR prefix
+    rel="${enc#$SEARCH_DIR/}"            # strip SEARCH_DIR prefix (incl. parent folder)
     local out_rel="${rel%.enc}"          # strip .enc extension
     local out="$LAB_DIR/$out_rel"
 
@@ -134,17 +138,17 @@ decrypt_file() {
 encrypt_file() {
     local lab_file="$1"
     # Compute relative path from LAB_DIR
-    # e.g. ~/labs/subfolder/notes.pdf → subfolder/notes.pdf
+    # e.g. ~/labs/tb/counter.v → tb/counter.v
     local rel
     rel="${lab_file#$LAB_DIR/}"
-    local enc="$WORK_DIR/${rel}.enc"
-    local dest_label="work/$rel.enc"
+    local enc="$SEARCH_DIR/${rel}.enc"
+    local dest_label="${SOURCE_SUBDIR:+$SOURCE_SUBDIR/}${rel}.enc"
 
-    # Student-created files that have no matching .enc go into WORK_DIR/mywork/
+    # Student-created files that have no matching .enc go into SEARCH_DIR/mywork/
     if [[ ! -f "$enc" ]]; then
-        mkdir -p "$WORK_DIR/mywork/$(dirname "$rel")"
-        enc="$WORK_DIR/mywork/${rel}.enc"
-        dest_label="work/mywork/${rel}.enc"
+        mkdir -p "$SEARCH_DIR/mywork/$(dirname "$rel")"
+        enc="$SEARCH_DIR/mywork/${rel}.enc"
+        dest_label="${SOURCE_SUBDIR:+$SOURCE_SUBDIR/}mywork/${rel}.enc"
     fi
 
     # Atomic write: encrypt to tmp then rename so a kill mid-save can't corrupt.
@@ -166,11 +170,29 @@ mkdir -p "$LAB_DIR" "$WORK_DIR"
 echo "[lab] Decrypting lab files …"
 found=0
 
-# Decrypt ALL .enc files recursively (preserves subfolder structure)
+# Auto-detect SOURCE_SUBDIR if not set:
+# If WORK_DIR has exactly one subfolder containing .enc files, use that as the parent.
+# e.g. ~/lab/labs/adder.v.enc → SOURCE_SUBDIR=labs → output: ~/labs/adder.v
+if [[ -z "$SOURCE_SUBDIR" ]]; then
+    detected=$(find "$WORK_DIR" -maxdepth 1 -mindepth 1 -type d 2>/dev/null | head -1)
+    if [[ -n "$detected" ]] && find "$detected" -name "*.enc" -maxdepth 1 | grep -q .; then
+        SOURCE_SUBDIR="$(basename "$detected")"
+        echo "[lab] Auto-detected source subfolder: $SOURCE_SUBDIR"
+    fi
+fi
+
+# Set the actual search root
+if [[ -n "$SOURCE_SUBDIR" ]]; then
+    SEARCH_DIR="$WORK_DIR/$SOURCE_SUBDIR"
+else
+    SEARCH_DIR="$WORK_DIR"
+fi
+
+# Decrypt ALL .enc files recursively (preserves subfolder structure, strips SOURCE_SUBDIR)
 while IFS= read -r enc; do
     decrypt_file "$enc"
     found=1
-done < <(find "$WORK_DIR" -type f -name "*.enc" 2>/dev/null)
+done < <(find "$SEARCH_DIR" -type f -name "*.enc" 2>/dev/null)
 
 # Fall back to the read-only shared folder if the git repo is empty
 if [[ $found -eq 0 ]]; then
