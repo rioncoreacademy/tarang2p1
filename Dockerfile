@@ -49,6 +49,7 @@ RUN apt-get update \
         libboost-dev \
         git \
         perl \
+        libswitch-perl \
         ccache \
         # 32-bit libs
         libc6:i386 \
