@@ -12,10 +12,19 @@
 # its .enc counterpart and the plaintext shredded — automatically, within
 # moments of it appearing.
 #
-# Residual limit: there's always a race between "file appears" and this
-# watcher reacting. A docker cp reading the file in that exact instant
-# can't be prevented by anything running inside the container — same
-# category of limit as root access or SIGKILL elsewhere in this system.
+# Two layers, not one: an inotify event watch for fast response, plus a
+# periodic full-tree poll as a backstop. inotify's recursive watch has a
+# real race — if something like `cp -r` creates a brand-new directory and
+# floods it with files immediately, the watch on that new directory may not
+# be registered yet when those writes happen, and the events are lost
+# entirely (a known inotify limitation, not a logic bug). The periodic scan
+# below can't miss anything for longer than its interval, regardless of how
+# fast files land.
+#
+# Residual limit: there's always a race between "file appears" and either
+# layer reacting. A docker cp reading the file in that exact instant can't
+# be prevented by anything running inside the container — same category of
+# limit as root access or SIGKILL elsewhere in this system.
 
 set -uo pipefail
 
@@ -82,8 +91,20 @@ _sweep_file() {
     shred -u "$tmp" 2>/dev/null || rm -f "$tmp"
 }
 
+_poll_loop() {
+    while true; do
+        sleep 5
+        find "$WORK" -type f 2>/dev/null | while IFS= read -r f; do
+            _sweep_file "$f"
+        done
+    done
+}
+
 mkdir -p "$WORK"
 echo "[sweep] Watching $WORK for stray plaintext …"
+
+_poll_loop &
+
 inotifywait -m -r -e close_write,moved_to \
     --exclude '/\.(git|build)/' \
     --format '%w%f' "$WORK" 2>/dev/null \

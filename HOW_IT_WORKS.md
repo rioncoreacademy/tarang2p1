@@ -414,16 +414,25 @@ file written by any other tool. If a student runs `cp myfile.v ~/lab/` (or
 `docker cp` copies a plaintext file in from outside), that file just exists,
 unencrypted, with nothing to stop it.
 
-`chipcraft-sweep.sh` runs as a background `inotifywait` watcher for exactly
-this gap: any file under `~/lab` that changes and isn't `*.enc`, isn't under
+`chipcraft-sweep.sh` runs two layers in the background for exactly this gap:
+an `inotifywait` event watch for fast response, plus a full-tree poll every 5
+seconds as a backstop. The poll exists because recursive inotify watches
+have a real race — if something like `cp -r` creates a brand-new directory
+and immediately floods it with files, the watch on that new directory may
+not be registered yet when those writes happen, and the events are lost
+entirely (a known inotify limitation, observed in practice with `cp -r`
+copying a whole directory tree out of `.build/`). The poll can't miss
+anything for longer than 5 seconds, regardless of how fast files land.
+
+Either layer: any file under `~/lab` that isn't `*.enc`, isn't under
 `~/lab/.build/` (tmpfs build scratch) or `~/lab/.git/` (git's own internals —
 touching these would corrupt the repo), and isn't one of the allowed
-plaintext infra files (`Makefile`, `.gitignore`, `.gitattributes`, `README.md`) gets moved out
-of the watched tree, encrypted to its `.enc` counterpart, and shredded —
-automatically, within moments of appearing, regardless of how it got there.
+plaintext infra files (`Makefile`, `.gitignore`, `.gitattributes`, `README.md`)
+gets moved out of the watched tree, encrypted to its `.enc` counterpart, and
+shredded — automatically, regardless of how it got there.
 
 Same residual limit as everywhere else in this system: there's an
-unavoidable race between "file appears" and the watcher reacting. A
+unavoidable race between "file appears" and either layer reacting. A
 `docker cp` reading the file in that exact instant can't be prevented by
 anything running inside the container — that's a kernel-level limit, not
 something this script (or any script) can close to zero.
