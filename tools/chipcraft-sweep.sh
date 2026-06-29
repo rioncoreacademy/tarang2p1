@@ -8,9 +8,9 @@
 # file under ~/lab that isn't *.enc, isn't under ~/lab/.build/ (tmpfs build
 # scratch), isn't under ~/lab/.git/ (git's own internals — touching these
 # would corrupt the repo), and isn't one of the allowed plaintext infra
-# files (Makefile, .gitignore, README.md) gets encrypted to its .enc
-# counterpart and the plaintext shredded — automatically, within moments
-# of it appearing.
+# files (Makefile, .gitignore, .gitattributes, README.md) gets encrypted to
+# its .enc counterpart and the plaintext shredded — automatically, within
+# moments of it appearing.
 #
 # Residual limit: there's always a race between "file appears" and this
 # watcher reacting. A docker cp reading the file in that exact instant
@@ -22,7 +22,7 @@ set -uo pipefail
 WORK="${WORK:-$HOME/lab}"
 KEYFILE="$HOME/.chipcraft_key"
 SCRATCH="$WORK/.build/.sweep-tmp"
-ALLOWLIST=("Makefile" ".gitignore" "README.md")
+ALLOWLIST=("Makefile" ".gitignore" ".gitattributes" "README.md")
 
 mkdir -p "$SCRATCH"
 

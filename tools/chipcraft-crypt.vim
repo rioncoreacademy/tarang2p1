@@ -139,12 +139,13 @@ endfunction
 " swapfile is created, and :w would write real plaintext straight to disk,
 " completely outside the encryption scheme. This mirrors the same allowlist
 " chipcraft-lab-files/.gitignore already enforces at the git layer (only
-" Makefile/.gitignore/README.md and *.enc are real plaintext), but live in
+" Makefile/.gitignore/.gitattributes/README.md and *.enc are real plaintext),
+" but live in
 " the editor instead of just at commit time. ~/lab/.build/ is exempt — that's
 " the tmpfs build-scratch area where transient plaintext is expected.
 
 let s:lab_root = expand('$HOME') . '/lab'
-let s:plain_allowlist = ['Makefile', '.gitignore', 'README.md']
+let s:plain_allowlist = ['Makefile', '.gitignore', '.gitattributes', 'README.md']
 
 function! s:UnderLab(path)
   return a:path =~# '^' . escape(s:lab_root, '/\') . '/'

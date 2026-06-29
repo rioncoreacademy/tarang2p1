@@ -418,7 +418,7 @@ unencrypted, with nothing to stop it.
 this gap: any file under `~/lab` that changes and isn't `*.enc`, isn't under
 `~/lab/.build/` (tmpfs build scratch) or `~/lab/.git/` (git's own internals —
 touching these would corrupt the repo), and isn't one of the allowed
-plaintext infra files (`Makefile`, `.gitignore`, `README.md`) gets moved out
+plaintext infra files (`Makefile`, `.gitignore`, `.gitattributes`, `README.md`) gets moved out
 of the watched tree, encrypted to its `.enc` counterpart, and shredded —
 automatically, within moments of appearing, regardless of how it got there.
 
@@ -430,7 +430,7 @@ something this script (or any script) can close to zero.
 
 ### tmpfs — why it still matters
 
-`/home/ubuntu/lab/.build` is still a **RAM-only filesystem** (tmpfs, 100 MB), nested
+`/home/ubuntu/lab/.build` is still a **RAM-only filesystem** (tmpfs, 2 GB ceiling — sized for Verilator builds, not just iverilog), nested
 inside `~/lab` rather than a sibling folder — one directory for students to
 think about, not two confusingly-similar names. Its role has shrunk: it now
 only ever holds plaintext `.v` source for the duration
@@ -542,10 +542,15 @@ docker run -d \
   -p 6080:6080 \
   -e CLASS_TOKEN=vlsi2026 \
   -e GITHUB_USER=your_github_name \
-  --tmpfs /home/ubuntu/lab/.build:size=100m,uid=1000,gid=1000,mode=0700 \
+  --tmpfs /home/ubuntu/lab/.build:size=2g,uid=1000,gid=1000,mode=0700 \
   ghcr.io/narrave/chipcraft:latest
 # Open http://localhost:6080 in your browser
 ```
+
+2g, not 100m: `chipcraft-tree`'s Verilator builds (precompiled headers, object
+files for a full RTL project) need much more scratch space than a single
+`iverilog` compile of one file ever did. tmpfs is a ceiling, not a
+reservation — it only consumes RAM as data is actually written.
 
 The `--tmpfs` flag is required — without it, `~/lab/.build` (used briefly during
 `make` to hold plaintext just long enough for `iverilog` to compile) would

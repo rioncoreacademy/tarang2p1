@@ -107,7 +107,11 @@ def _launch_container(github_user: str, port: int, session_token: str) -> str:
         },
         # Build scratch space, nested inside ~/lab rather than a sibling
         # folder. RAM only (tmpfs) — plaintext from `make` never touches disk.
-        tmpfs={"/home/ubuntu/lab/.build": "size=100m,uid=1000,gid=1000,mode=0700"},
+        # 2g, not 100m: Verilator C++ builds (precompiled headers, object
+        # files for a full RTL project) need much more than a single
+        # iverilog compile of one file ever did. tmpfs is a ceiling, not a
+        # reservation — only consumes RAM as data is actually written.
+        tmpfs={"/home/ubuntu/lab/.build": "size=2g,uid=1000,gid=1000,mode=0700"},
         # Join the compose network so the container can reach http://api:8000
         network=COMPOSE_NETWORK,
         # Needed so entrypoint.sh can apply egress iptables rules
