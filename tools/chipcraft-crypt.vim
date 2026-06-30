@@ -64,12 +64,22 @@ function! s:Decrypt()
     return
   endif
 
-  silent execute '%!openssl enc -d -aes-256-cbc -pbkdf2 -k ' . shellescape(l:key)
+  " BufReadCmd means Vim never loaded this file itself — the buffer starts
+  " as a single empty line, not the real ciphertext. Read the actual file
+  " explicitly via -in; piping the (empty) buffer through openssl as stdin
+  " (the old `%!openssl ...` approach) decrypted nothing.
+  let l:enc_path = expand('%:p')
+  silent execute '0r !openssl enc -d -aes-256-cbc -pbkdf2 -k ' . shellescape(l:key) .
+        \ ' -in ' . shellescape(l:enc_path)
   if v:shell_error != 0
     echohl ErrorMsg | echom 'ChipCraft: decrypt failed for ' . expand('%') | echohl None
-    silent undo
+    silent %delete _
     return
   endif
+  " :0r inserts above the buffer's original single empty line, pushing it
+  " to the bottom — remove that leftover line (blackhole register, doesn't
+  " touch the unnamed/clipboard register).
+  silent $delete _
 
   let l:student = empty($GITHUB_USER) ? 'unknown' : $GITHUB_USER
   silent execute '%!python3 /usr/local/bin/watermark.py encode ' . shellescape(l:student)
