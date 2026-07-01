@@ -129,6 +129,22 @@ function! s:Encrypt()
         \ ' -in ' . shellescape(l:src_for_enc) . ' -out ' . shellescape(l:tmp_enc))
   let l:ok = v:shell_error == 0
 
+  " If a persistent decrypted copy exists in build/ for this file (put
+  " there by chipcraft-decrypt-all.sh at startup), sync it now so that
+  " compile.pl/regress.pl see the latest edit, not the stale startup copy.
+  " Uses the watermarked plaintext (no visible header) — same format that
+  " chipcraft-decrypt-all.sh produces — so the build/ copy stays consistent.
+  if l:ok
+    let l:inner = fnamemodify(l:enc_path, ':r')
+    if l:inner =~# '^' . escape(s:lab_root, '/\') . '/'
+      let l:rel = l:inner[len(s:lab_root) + 1:]
+      let l:build_copy = s:lab_root . '/build/' . l:rel
+      if isdirectory(fnamemodify(l:build_copy, ':h'))
+        call writefile(readfile(l:src_for_enc, 'b'), l:build_copy, 'b')
+      endif
+    endif
+  endif
+
   call delete(l:tmp)
   call delete(l:tmp_wm)
   if !l:ok
