@@ -13,8 +13,8 @@ RUN apt-get update \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
         # Desktop & VNC
-        xfce4 \
-        xfce4-terminal \
+        cinnamon \
+        gnome-terminal \
         tigervnc-standalone-server \
         novnc \
         websockify \

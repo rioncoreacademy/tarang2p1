@@ -65,9 +65,9 @@ for i in $(seq 1 15); do
     sleep 1
 done
 
-# Start XFCE desktop session on display :1
+# Start Cinnamon desktop session on display :1
 DISPLAY=:1 XDG_RUNTIME_DIR=/tmp/runtime-ubuntu \
-    dbus-launch --exit-with-session startxfce4 >> /tmp/xfce.log 2>&1 &
+    dbus-launch --exit-with-session cinnamon-session >> /tmp/cinnamon.log 2>&1 &
 
 # Wait for VNC to be ready
 for i in $(seq 1 15); do
