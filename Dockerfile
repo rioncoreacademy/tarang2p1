@@ -6,7 +6,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NOVNC_PORT=6080 \
     VNC_RESOLUTION=1280x720 \
     VNC_COL_DEPTH=24 \
-    GITHUB_USER="student"
+    GITHUB_USER="user" \
+    WORK=/workspaces/projects
 
 RUN apt-get update \
     && dpkg --add-architecture i386 \
@@ -99,7 +100,7 @@ RUN useradd -m -s /bin/bash ubuntu
 # itself, breaking every clone/touch/mv into it. ubuntu's sudo is locked to
 # iptables only (see below), so this can't be fixed later from inside the
 # container — it has to be baked into the image.
-RUN mkdir -p /home/ubuntu/lab && chown ubuntu:ubuntu /home/ubuntu/lab
+RUN mkdir -p /workspaces/projects && chown -R ubuntu:ubuntu /workspaces
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

@@ -7,6 +7,7 @@ VNC_DEPTH=${VNC_COL_DEPTH:-24}
 VNC_PORT=${VNC_PORT:-5901}
 NOVNC_PORT=${NOVNC_PORT:-6080}
 VNC_PASSWORD=${VNC_PASSWORD:-novnc}
+WORK="${WORK:-/workspaces/projects}"
 
 # ── Egress firewall ──────────────────────────────────────────────────────────
 # Block outbound internet so students cannot upload decrypted .v files to
@@ -93,22 +94,22 @@ echo "Lab desktop ready on port $NOVNC_PORT"
 # will exec its own `rm -rf ~/lab && git clone <student's fork>` shortly
 # after this container starts (see api/main.py's _clone_repo()), so cloning
 # the generic public template here would just be wasted work.
-if [[ -z "${BOOTSTRAP_TOKEN:-}" && ! -d "$HOME/lab/.git" ]]; then
-    echo "[lab] Cloning chipcraft-lab-files -> ~/lab …" >> /tmp/lab-crypto.log
-    # Clone into a temp dir, then merge into ~/lab — cloning directly into
-    # ~/lab fails because the build tmpfs mount (declared at container
+if [[ -z "${BOOTSTRAP_TOKEN:-}" && ! -d "$WORK/.git" ]]; then
+    echo "[projects] Cloning chipcraft-lab-files -> $WORK …" >> /tmp/lab-crypto.log
+    # Clone into a temp dir, then merge into $WORK — cloning directly into
+    # $WORK fails because the build tmpfs mount (declared at container
     # creation) already exists there, making git see a "non-empty" target.
     # /usr/bin/git directly — /usr/local/bin/git (the wrapper) blocks `clone` outright.
     TMPCLONE=$(mktemp -d)
     if /usr/bin/git clone https://github.com/narrave/chipcraft-lab-files.git "$TMPCLONE" \
         >> /tmp/lab-crypto.log 2>&1; then
-        mkdir -p "$HOME/lab"
+        mkdir -p "$WORK"
         shopt -s dotglob
-        mv "$TMPCLONE"/* "$HOME/lab"/ 2>>/tmp/lab-crypto.log
+        mv "$TMPCLONE"/* "$WORK"/ 2>>/tmp/lab-crypto.log
         shopt -u dotglob
         rmdir "$TMPCLONE" 2>/dev/null
     else
-        echo "[lab] WARNING: could not clone chipcraft-lab-files." >> /tmp/lab-crypto.log
+        echo "[projects] WARNING: could not clone chipcraft-lab-files." >> /tmp/lab-crypto.log
         rm -rf "$TMPCLONE"
     fi
 fi
