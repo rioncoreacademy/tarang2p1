@@ -82,7 +82,8 @@ an environment variable in the container, so `docker inspect` reveals nothing us
 | `tools/chipcraft-key-init.sh` | chipcraft-lab | Container — fetches the key once, writes `~/.chipcraft_key` (mode 600) |
 | `tools/chipcraft-tree.sh` | chipcraft-lab | Container — decrypts/shreds a whole subtree on demand (session-scoped alternative; not required for `tarang2_dp1` day to day, see below) |
 | `tools/chipcraft-decrypt-all.sh` | chipcraft-lab | Container — decrypts every `.enc` under `~/lab` into `~/lab/build` once at startup, persists for the whole session (deliberate tradeoff — see "Multi-file projects" below) |
-| `tools/chipcraft-sweep.sh` | chipcraft-lab | Container — background watcher; auto-encrypts any stray plaintext that appears under `~/lab` by any means other than gvim (`cp`, `mv`, `docker cp`, …) |
+| `tools/chipcraft-sweep.sh` | chipcraft-lab | Container — background watcher; encrypts `.v` in WORK and syncs to BUILD; encrypts user-created `.v` in BUILD to WORK |
+| `tools/chipcraft-vim-wrapper.sh` | chipcraft-lab | Installed as `/usr/local/bin/vi`, `vim`, `gvim` — silently redirects `*.v` args to `*.v.enc` so users cannot create raw `.v` files |
 | `tools/chipcraft-crypt.vim` | chipcraft-lab | System-wide gvim plugin — decrypts/encrypts `*.v.enc` in memory, no plaintext file ever written |
 | `tools/watermark.py` | chipcraft-lab | Embeds / reads invisible trailing-space watermark |
 | `tools/detect_leak.sh` | chipcraft-lab | Teacher tool — identifies student from a leaked file |
@@ -411,35 +412,51 @@ exactly as before, for anyone who wants session-scoped decrypt/shred for a
 specific subtree instead of relying on the startup bulk-decrypt — it's just
 no longer required for `tarang2_dp1` day to day.
 
-### Catching stray plaintext from cp / mv / docker cp
+### Blocking .v file creation — vim wrapper
 
-`chipcraft-crypt.vim` only intercepts Vim's own buffer I/O — it can't see a
-file written by any other tool. If a student runs `cp myfile.v ~/lab/` (or
-`docker cp` copies a plaintext file in from outside), that file just exists,
-unencrypted, with nothing to stop it.
+`vi`, `vim`, and `gvim` in `/usr/local/bin/` are replaced by a ChipCraft
+wrapper (`chipcraft-vim-wrapper.sh`) that sits in front of the real binaries:
 
-`chipcraft-sweep.sh` runs two layers in the background for exactly this gap:
-an `inotifywait` event watch for fast response, plus a full-tree poll every 5
-seconds as a backstop. The poll exists because recursive inotify watches
-have a real race — if something like `cp -r` creates a brand-new directory
-and immediately floods it with files, the watch on that new directory may
-not be registered yet when those writes happen, and the events are lost
-entirely (a known inotify limitation, observed in practice with `cp -r`
-copying a whole directory tree out of `build/`). The poll can't miss
-anything for longer than 5 seconds, regardless of how fast files land.
+```
+Student runs:  vi test.v      (or gvim, vim)
+                    |
+                    | wrapper intercepts — any *.v argument → *.v.enc
+                    v
+              vi test.v.enc   (opens the encrypted version)
+                    |
+                    | chipcraft-crypt.vim plugin decrypts in memory
+                    v
+              Editor shows plaintext Verilog — file on disk stays .v.enc
+```
 
-Either layer: any file under `~/lab` that isn't `*.enc`, isn't under
-`~/lab/build/` (tmpfs build scratch) or `~/lab/.git/` (git's own internals —
-touching these would corrupt the repo), and isn't one of the allowed
-plaintext infra files (`Makefile`, `.gitignore`, `.gitattributes`, `README.md`)
-gets moved out of the watched tree, encrypted to its `.enc` counterpart, and
-shredded — automatically, regardless of how it got there.
+This means `vi test.v` **never creates a `.v` file** — it opens (or creates)
+`test.v.enc` instead. Other arguments pass through unchanged: options, `.vh`
+headers, `.vcd` waveforms, etc.
 
-Same residual limit as everywhere else in this system: there's an
-unavoidable race between "file appears" and either layer reacting. A
-`docker cp` reading the file in that exact instant can't be prevented by
-anything running inside the container — that's a kernel-level limit, not
-something this script (or any script) can close to zero.
+### Catching stray plaintext from touch / cp / mv
+
+`chipcraft-sweep.sh` runs two layers in the background:
+- **inotify** (`close_write`, `moved_to`) — reacts within milliseconds
+- **Full-tree poll every 5 seconds** — backstop for events inotify misses
+  (e.g. `cp -r` flooding a new directory before its watch is registered)
+
+The sweep watches both `$WORK` and `$BUILD` and handles every case:
+
+| File that appears | What sweep does |
+|---|---|
+| **`.v` in WORK** | Encrypt → `.enc` in WORK · Copy `.v` to BUILD (read-only) · Shred original |
+| **`.enc` in WORK** | Lock read-only · Decrypt → `.v` in BUILD (read-only) |
+| **`.enc` in BUILD** | Decrypt → `.v` in BUILD · Move `.enc` to WORK · Lock both |
+| **`.v` in BUILD, no matching `.enc` in WORK** | Encrypt → `.enc` in WORK · Lock `.v` in BUILD read-only |
+| **`.v` in BUILD, matching `.enc` exists in WORK** | Re-lock read-only (legitimate decrypted copy — no re-encrypt needed) |
+
+So no matter how a `.v` file lands — `touch`, `cp`, `mv`, `docker cp` — it is
+converted to a properly tracked `.enc` in WORK (with a read-only decrypted copy
+in BUILD) within seconds.
+
+Same residual limit as everywhere else: there's an unavoidable race between
+"file appears" and either layer reacting. A read happening in that exact
+instant can't be prevented by anything running inside the container.
 
 ### tmpfs — why it still matters
 
@@ -619,15 +636,22 @@ postAttachCommand fires (runs AFTER Codespace secrets are injected):
 ### Local Docker Mode
 
 ```bash
-docker pull ghcr.io/narrave/chipcraft:latest
+docker stop chipcraft-lab && docker rm chipcraft-lab
+docker pull ghcr.io/narrave/chipcraft:v1.0
 docker run -d \
+  --name chipcraft-lab \
+  --cap-add=NET_ADMIN \
   -p 6080:6080 \
   -e CLASS_TOKEN=vlsi2026 \
   -e GITHUB_USER=your_github_name \
-  --tmpfs /home/ubuntu/lab/build:size=2g,uid=1000,gid=1000,mode=0700 \
-  ghcr.io/narrave/chipcraft:latest
+  --tmpfs /workspaces/projects/build:size=2g,uid=1000,gid=1000,mode=0700 \
+  ghcr.io/narrave/chipcraft:v1.0
 # Open http://localhost:6080 in your browser
 ```
+
+- `--cap-add=NET_ADMIN` is required for the egress firewall (iptables inside the container)
+- `--tmpfs /workspaces/projects/build` mounts the decrypted-files directory as RAM-only
+- Replace `v1.0` with `latest` if you want the bleeding-edge development build
 
 2g, not 100m: `chipcraft-tree`'s Verilator builds (precompiled headers, object
 files for a full RTL project) need much more scratch space than a single
@@ -650,9 +674,17 @@ The container fetches the key from the Cloudflare Worker using CLASS_TOKEN.
 ### Edit (all modes)
 
 ```bash
-cd ~/lab
-gvim counter.v.enc      # decrypts into the buffer, watermarked, in memory
-:w                       # re-encrypts straight back to counter.v.enc
+# Open an existing encrypted lab file — plugin decrypts into buffer
+gvim /workspaces/projects/.build.enc/counter.v.enc
+
+# Or use the shortcut — vi/vim/gvim wrappers redirect .v to .v.enc automatically
+gvim counter.v          # → actually opens counter.v.enc (no .v file created)
+
+# :w re-encrypts straight back to the .enc file
+:w
+
+# Read-only decrypted copies are always in BUILD for simulation:
+ls /workspaces/projects/build/
 ```
 
 ### Compile and simulate (all modes)
@@ -775,28 +807,36 @@ cd chipcraft-lab-files && git add *.v.enc && git commit -m "lab1" && git push
 ## File Layout Inside the Container
 
 ```
-/home/ubuntu/
+/workspaces/projects/
 |
-+-- lab/                        <- git repo (persistent)
++-- .build.enc/                 <- WORK: git repo (persistent, encrypted at rest)
 |   +-- counter.v.enc           <- re-encrypted by gvim on every :w
 |   +-- tb_counter.v.enc
+|   +-- rtl/
+|   |   +-- alu.v.enc
 |   +-- Makefile
 |   +-- .gitignore              <- blocks all files; only *.enc allowed
-|   +-- mywork/                 <- student's own designs
-|   |   +-- my_adder.v.enc      <- only .enc files here, committed to git
-|   |
-|   +-- build/                 <- tmpfs (RAM only — vanishes when container stops)
-|       +-- sim.vvp             <- generated by iverilog (compiled bytecode, kept)
-|       +-- counter.vcd         <- generated by simulation, opened in GTKWave
-|       (counter.v / tb_counter.v exist here only for the few seconds `make`
-|        takes to compile — shredded immediately after iverilog exits)
+|   (ALL files here are read-only, 444. Dirs are writable so gvim/sweep can add .enc files)
 |
++-- build/                      <- BUILD: tmpfs (RAM only, vanishes when container stops)
+    +-- counter.v               <- read-only decrypted copy (written by decrypt process)
+    +-- tb_counter.v            <- read-only decrypted copy
+    +-- rtl/
+    |   +-- alu.v               <- read-only decrypted copy
+    +-- sim.vvp                 <- generated by iverilog (compiled bytecode)
+    +-- counter.vcd             <- generated by simulation, opened in GTKWave
+    (ALL files here are read-only, 444. Dirs readable+executable, not writable)
+
+/home/ubuntu/
 +-- .chipcraft_key              <- decryption key, mode 600 (read by gvim plugin)
 ```
 
-Plaintext `.v` source is never written to `~/lab/build/` for editing anymore —
-that only happens transiently during `make`. Editing happens entirely inside gvim's
-buffer; see the Decryption section above.
+**Paths available as environment variables in every script and the vim plugin:**
+
+```bash
+WORK=/workspaces/projects/.build.enc    # encrypted source (git repo)
+BUILD=/workspaces/projects/build        # decrypted read-only copies (tmpfs)
+```
 
 ---
 
@@ -815,7 +855,9 @@ buffer; see the Decryption section above.
 | **`docker cp ~/lab/*.enc`** | Blocked | Ciphertext only — useless without the key |
 | **`docker cp ~/lab/build/counter.v`** (simple lab, via `make`) | Blocked (almost always) | No plaintext `.v` file exists there except for the few seconds a `make` is actively compiling |
 | **`docker cp ~/lab/build/tarang2_dp1/...`** (multi-file projects) | **Not blocked — by design** | `chipcraft-decrypt-all.sh` decrypts this persistently for the whole session (deliberate tradeoff, see "Multi-file projects" above). Real plaintext source, readable at any time. |
-| **`cp`/`mv`/`docker cp` dropping plaintext into `~/lab`** | Blocked (almost always) | `chipcraft-sweep.sh` auto-encrypts and shreds any stray plaintext within moments of it appearing, regardless of how it got there — but can't beat a read happening in the exact same instant |
+| **`vi test.v`** / **`gvim test.v`** | Blocked | `vi`/`vim`/`gvim` are wrappers — redirect `*.v` args to `*.v.enc`. No `.v` file is ever created. |
+| **`touch test.v`** in WORK or BUILD | Blocked (within seconds) | `chipcraft-sweep.sh` detects it and encrypts (WORK) or encrypts+locks (BUILD) |
+| **`cp`/`mv`/`docker cp` dropping `.v` into WORK or BUILD** | Blocked (within seconds) | Sweep auto-encrypts to WORK, leaves read-only copy in BUILD |
 | **`cat ~/.chipcraft_key`** | Not possible to block | Same Linux user as gvim — see note in the key-delivery table above |
 | **Phone photo / screen recording** | Cannot block | Watermark identifies the student |
 | **Manual typing** the code | Cannot block | Watermark + academic integrity policy |

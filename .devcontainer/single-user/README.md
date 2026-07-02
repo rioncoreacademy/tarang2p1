@@ -74,6 +74,28 @@ Workflow: `.github/workflows/publish-image.yml`
 - Python 3 + pip
 - xfce4-terminal, mousepad editor
 
+## File Locations
+
+| Path | Purpose |
+|------|---------|
+| `/workspaces/projects/.build.enc/` | **WORK** — encrypted `.enc` files, git repo, read-only files |
+| `/workspaces/projects/build/` | **BUILD** — decrypted read-only `.v` copies (tmpfs, RAM only) |
+
+## Working with Files
+
+**Open a lab file (two ways):**
+```bash
+gvim /workspaces/projects/.build.enc/counter.v.enc   # direct path to .enc
+gvim counter.v      # wrapper auto-redirects to counter.v.enc
+```
+
+**Only `.enc` files are allowed.** If you try to create a plain `.v` file:
+- `vi test.v` → wrapper silently opens `test.v.enc` instead
+- `touch test.v` → sweep detects and encrypts it within seconds
+- `cp file.v ./` → sweep encrypts it and locks in place
+
+**Decrypted `.v` files in `/workspaces/projects/build/` are read-only** — for simulation tools only. Edit via gvim on the `.enc` file.
+
 ## SSH Key Setup
 
 Clipboard is blocked inside the container. Use `curl` to add your SSH key to GitHub directly:
