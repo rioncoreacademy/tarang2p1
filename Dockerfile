@@ -114,6 +114,7 @@ COPY tools/chipcraft-decrypt-all.sh /usr/local/bin/chipcraft-decrypt-all.sh
 COPY tools/chipcraft-sweep.sh     /usr/local/bin/chipcraft-sweep.sh
 COPY tools/watermark.py           /usr/local/bin/watermark.py
 COPY tools/git-wrapper.sh         /usr/local/bin/git
+COPY tools/chipcraft-vim-wrapper.sh /usr/local/bin/chipcraft-vim-wrapper.sh
 COPY tools/pre-commit             /usr/local/lib/chipcraft-hooks/pre-commit
 COPY tools/chipcraft-gitignore    /etc/chipcraft-gitignore
 # System-wide gvim plugin: transparent in-memory decrypt/encrypt of *.enc
@@ -126,7 +127,12 @@ RUN chmod +x /usr/local/bin/chipcraft-key-init.sh \
              /usr/local/bin/chipcraft-sweep.sh \
              /usr/local/bin/watermark.py \
              /usr/local/bin/git \
+             /usr/local/bin/chipcraft-vim-wrapper.sh \
              /usr/local/lib/chipcraft-hooks/pre-commit \
+    # vi / vim / gvim all go through the wrapper — *.v args become *.v.enc
+    && ln -sf /usr/local/bin/chipcraft-vim-wrapper.sh /usr/local/bin/vi \
+    && ln -sf /usr/local/bin/chipcraft-vim-wrapper.sh /usr/local/bin/vim \
+    && ln -sf /usr/local/bin/chipcraft-vim-wrapper.sh /usr/local/bin/gvim \
     # System-level git config: *.v excluded and hooksPath locked — root-owned, not writable by ubuntu
     # Use /usr/bin/git directly — the wrapper at /usr/local/bin/git blocks hooksPath changes
     && /usr/bin/git config --system core.excludesFile /etc/chipcraft-gitignore \
