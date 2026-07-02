@@ -81,9 +81,26 @@ _sweep_file() {
     fi
 
     case "$path" in
-        "$BUILD"/*)       return 0 ;;   # build scratch — exempt (non-.enc)
-        "$WORK"/.git/*)   return 0 ;;   # git internals — never touch
-        *.swp|*.swo|*~)   return 0 ;;   # editor temp junk
+        *.swp|*.swo|*~)         return 0 ;;   # editor temp files — ignore everywhere
+        "$BUILD"/.sweep-tmp/*)  return 0 ;;   # our own scratch space
+        "$BUILD"/.git/*)        return 0 ;;   # git internals
+        "$WORK"/.git/*)         return 0 ;;   # git internals
+        "$BUILD"/*)
+            # build/ only holds read-only decrypted copies put here by the decrypt process.
+            # Allowlisted files (Makefile etc.) are fine.
+            # Any OTHER file here must have a matching .enc in WORK — if not, the user
+            # created it directly (vi, cp, touch, mv) and we delete it immediately.
+            _is_allowed "$path" && return 0
+            local rel="${path#"$BUILD"/}"
+            if [[ -f "$WORK/${rel}.enc" ]]; then
+                # Legitimate decrypted file — re-lock it in case the user chmod'd it writable
+                chmod a-w "$path" 2>/dev/null || true
+            else
+                # No matching .enc in WORK → user-created plaintext → delete
+                rm -f "$path" 2>/dev/null
+                echo "[sweep] BLOCKED: deleted unauthorized file in build/: $rel" >&2
+            fi
+            return 0 ;;
     esac
 
     # .enc file in WORK → lock read-only + sync decrypted copy to build/
