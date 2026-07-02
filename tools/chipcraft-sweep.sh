@@ -28,9 +28,10 @@
 
 set -uo pipefail
 
-WORK="${WORK:-$HOME/lab}"
+WORK="${WORK:-/workspaces/projects/.build.enc}"
+BUILD="${BUILD:-/workspaces/projects/build}"
 KEYFILE="$HOME/.chipcraft_key"
-SCRATCH="$WORK/build/.sweep-tmp"
+SCRATCH="$BUILD/.sweep-tmp"
 ALLOWLIST=("Makefile" ".gitignore" ".gitattributes" "README.md")
 
 mkdir -p "$SCRATCH"
@@ -48,7 +49,7 @@ _sweep_file() {
     local path="$1"
     [[ -f "$path" ]] || return 0
     case "$path" in
-        "$WORK"/build/*)  return 0 ;;   # tmpfs build scratch — exempt
+        "$BUILD"/*)  return 0 ;;   # tmpfs build scratch — exempt
         "$WORK"/.git/*)   return 0 ;;   # git internals — never touch
         *.enc)            return 0 ;;   # already encrypted
         *.swp|*.swo|*~)   return 0 ;;   # editor temp junk, not real source

@@ -30,8 +30,8 @@
 
 set -euo pipefail
 
-WORK="${WORK:-$HOME/lab}"
-BUILD="${BUILD:-$WORK/build}"
+WORK="${WORK:-/workspaces/projects/.build.enc}"
+BUILD="${BUILD:-/workspaces/projects/build}"
 KEYFILE="$HOME/.chipcraft_key"
 
 usage() {

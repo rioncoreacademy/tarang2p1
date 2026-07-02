@@ -98,4 +98,4 @@ printf '%s\n' "$KEY" > "$KEY_FILE"
 chmod 600 "$KEY_FILE"
 unset KEY
 
-echo "[lab] Key ready — open *.v.enc files in gvim under ~/lab/ to edit."
+echo "[lab] Key ready — open *.v.enc files in gvim under /workspaces/projects/.build.enc/ to edit."

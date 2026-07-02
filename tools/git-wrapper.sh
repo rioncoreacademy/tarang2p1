@@ -4,7 +4,7 @@
 
 REAL_GIT=/usr/bin/git
 CMD="${1:-}"
-LAB_DIR="$HOME/lab"
+LAB_DIR="/workspaces/projects/.build.enc"
 
 case "$CMD" in
     init)
@@ -26,7 +26,7 @@ case "$CMD" in
         # Only allow git add/commit/push from inside ~/lab/
         CURRENT="$(pwd)"
         if [[ "$CURRENT" != "$LAB_DIR" && "$CURRENT" != "$LAB_DIR/"* ]]; then
-            echo "[ChipCraft] git is only allowed inside ~/lab/." >&2
+            echo "[ChipCraft] git is only allowed inside /workspaces/projects/.build.enc/." >&2
             exit 1
         fi
         ;;
