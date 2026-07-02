@@ -69,6 +69,14 @@ mkdir -p "$HOME/.vnc" /tmp/runtime-ubuntu
 chmod 700 /tmp/runtime-ubuntu
 touch "$HOME/.Xresources"
 
+# Set xfce4-terminal as the preferred terminal; xterm as fallback.
+# Without this, right-click "Open Terminal Here" silently does nothing
+# when the desktop environment hasn't auto-detected a terminal emulator.
+mkdir -p "$HOME/.config/xfce4"
+cat > "$HOME/.config/xfce4/helpers.rc" <<'EOF'
+TerminalEmulator=xfce4-terminal
+EOF
+
 # Clean up any leftover lock files from a previous run
 rm -f /tmp/.X1-lock /tmp/.X11-unix/X1 2>/dev/null || true
 

@@ -1,6 +1,9 @@
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8 \
     DISPLAY=:1 \
     VNC_PORT=5901 \
     NOVNC_PORT=6080 \
@@ -14,14 +17,21 @@ RUN apt-get update \
     && dpkg --add-architecture i386 \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
+        locales \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8 \
+    && apt-get install -y --no-install-recommends \
         # Desktop & VNC
         xfce4 \
         xfce4-terminal \
+        xterm \
         tigervnc-standalone-server \
         novnc \
         websockify \
         xauth \
         xfonts-base \
+        xfonts-100dpi \
+        xfonts-75dpi \
         x11-xserver-utils \
         dbus-x11 \
         ca-certificates \
