@@ -86,11 +86,18 @@ RUN echo "ubuntu ALL=(root) NOPASSWD: /sbin/iptables" \
         > /etc/sudoers.d/lab-iptables \
     && chmod 440 /etc/sudoers.d/lab-iptables
 
-# Install Verilator + GTKWave via OSS CAD Suite (pinned release)
-# To upgrade: https://github.com/YosysHQ/oss-cad-suite-build/releases
-RUN curl -fSL \
-    "https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2026-06-19/oss-cad-suite-linux-x64-20260619.tgz" \
-    | tar xz -C /opt/
+# Install Verilator + GTKWave via OSS CAD Suite (latest stable release)
+# Fetches the latest release URL from GitHub API at build time.
+# To pin to a specific release: https://github.com/YosysHQ/oss-cad-suite-build/releases
+RUN OSS_URL=$(curl -fsSL --max-time 30 \
+        "https://api.github.com/repos/YosysHQ/oss-cad-suite-build/releases/latest" \
+        | python3 -c \
+          "import sys,json; assets=[a['browser_download_url'] for a in json.load(sys.stdin)['assets'] if 'linux-x64' in a['name'] and a['name'].endswith('.tgz')]; print(assets[0])") \
+    && echo "Downloading OSS CAD Suite: $OSS_URL" \
+    && curl -fSL --retry 3 --retry-delay 10 --max-time 600 "$OSS_URL" \
+       -o /tmp/oss-cad-suite.tgz \
+    && tar xz -C /opt/ -f /tmp/oss-cad-suite.tgz \
+    && rm /tmp/oss-cad-suite.tgz
 
 ENV PATH="/opt/oss-cad-suite/bin:$PATH"
 
