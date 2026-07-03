@@ -182,6 +182,19 @@ export CLASS_TOKEN="${CLASS_TOKEN:-vlsi2026}"
 # background; in Codespace mode the key isn't available yet at this point
 # (CLASS_TOKEN arrives after attach), so setup.sh also calls this again
 # once the key is actually ready there.
+# Re-refresh the GitHub egress allowlist periodically for the whole
+# container lifetime. The one-shot fetch above (before the DROP policy was
+# set) only covers the IP ranges GitHub published at container start —
+# ranges rotate, and a long-running session (Local Docker Mode especially,
+# which has no devcontainer lifecycle hooks to piggyback a refresh on the
+# way Codespace mode's setup.sh does) can drift stale over hours. This
+# covers every mode (Local Docker, Codespace, Server) uniformly since
+# entrypoint.sh is the one script all of them share.
+( while true; do
+      sleep 1800
+      /usr/local/bin/chipcraft-refresh-github >> /tmp/lab-crypto.log 2>&1
+  done ) &
+
 /usr/local/bin/chipcraft-decrypt-all.sh >> /tmp/lab-crypto.log 2>&1 &
 
 # Keep container alive
