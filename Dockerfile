@@ -173,6 +173,13 @@ RUN chmod +x /usr/local/bin/chipcraft-mount-exec.sh \
 
 COPY novnc-index.html /usr/share/novnc/index.html
 
+# Rebrand the stock noVNC connect screen's "noVNC" logo to "ChipCraft".
+# See novnc-rebrand.js header for why this is a runtime text-replace instead
+# of patching vnc.html's markup directly (version-fragile).
+COPY novnc-rebrand.js /usr/share/novnc/chipcraft-rebrand.js
+RUN sed -i 's#</body>#<script src="chipcraft-rebrand.js"></script></body>#' \
+        /usr/share/novnc/vnc.html
+
 EXPOSE 6080
 
 USER ubuntu
