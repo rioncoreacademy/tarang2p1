@@ -15,6 +15,7 @@ on:
       - tools/chipcraft-decrypt-all.sh
       - tools/chipcraft-sweep.sh
       - tools/chipcraft-crypt.vim
+      - tools/chipcraft-vim-wrapper.sh
 
 jobs:
   build-and-push:
