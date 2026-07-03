@@ -17,6 +17,7 @@ on:
       - tools/chipcraft-crypt.vim
       - tools/chipcraft-vim-wrapper.sh
       - tools/chipcraft-refresh-github-ips.sh
+      - tools/chipcraft-github-ssh-setup.sh
       - novnc-rebrand.js
 
 jobs:

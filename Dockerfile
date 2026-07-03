@@ -144,6 +144,7 @@ COPY tools/chipcraft-tree.sh        /usr/local/bin/chipcraft-tree
 COPY tools/chipcraft-decrypt-all.sh /usr/local/bin/chipcraft-decrypt-all.sh
 COPY tools/chipcraft-sweep.sh     /usr/local/bin/chipcraft-sweep.sh
 COPY tools/chipcraft-refresh-github-ips.sh /usr/local/bin/chipcraft-refresh-github
+COPY tools/chipcraft-github-ssh-setup.sh /usr/local/bin/chipcraft-github-ssh-setup
 COPY tools/watermark.py           /usr/local/bin/watermark.py
 COPY tools/git-wrapper.sh         /usr/local/bin/git
 COPY tools/chipcraft-vim-wrapper.sh /usr/local/bin/chipcraft-vim-wrapper.sh
@@ -159,6 +160,7 @@ RUN chmod +x /usr/local/bin/chipcraft-mount-exec.sh \
              /usr/local/bin/chipcraft-decrypt-all.sh \
              /usr/local/bin/chipcraft-sweep.sh \
              /usr/local/bin/chipcraft-refresh-github \
+             /usr/local/bin/chipcraft-github-ssh-setup \
              /usr/local/bin/watermark.py \
              /usr/local/bin/git \
              /usr/local/bin/chipcraft-vim-wrapper.sh \

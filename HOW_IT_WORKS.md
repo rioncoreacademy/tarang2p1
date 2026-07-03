@@ -84,6 +84,7 @@ an environment variable in the container, so `docker inspect` reveals nothing us
 | `tools/chipcraft-decrypt-all.sh` | chipcraft-lab | Container — decrypts every `.enc` under `~/lab` into `~/lab/build` once at startup, persists for the whole session (deliberate tradeoff — see "Multi-file projects" below) |
 | `tools/chipcraft-sweep.sh` | chipcraft-lab | Container — background watcher; encrypts `.v` in WORK and syncs to BUILD; encrypts user-created `.v` in BUILD to WORK |
 | `tools/chipcraft-refresh-github-ips.sh` | chipcraft-lab | Installed as `/usr/local/bin/chipcraft-refresh-github` — re-fetches GitHub's current IP ranges and allowlists them in the egress firewall on demand, for when `git pull`/`clone`/`push` hangs because GitHub rotated an IP since container start |
+| `tools/chipcraft-github-ssh-setup.sh` | chipcraft-lab | Installed as `/usr/local/bin/chipcraft-github-ssh-setup` — generates an SSH key if needed and uploads it to the student's own GitHub account via the API (clipboard is blocked, so pasting a key into GitHub's web UI isn't possible from inside the container) |
 | `tools/chipcraft-vim-wrapper.sh` | chipcraft-lab | Installed as `/usr/local/bin/vi`, `vim`, `gvim` — silently redirects `*.v` args to `*.v.enc` so users cannot create raw `.v` files |
 | `tools/chipcraft-crypt.vim` | chipcraft-lab | System-wide gvim plugin — decrypts/encrypts `*.v.enc` in memory, no plaintext file ever written |
 | `tools/watermark.py` | chipcraft-lab | Embeds / reads invisible trailing-space watermark |
@@ -509,6 +510,18 @@ Every `:w` in gvim re-encrypts. Teacher files update their existing `.enc` in
 The clipboard is blocked (`-noclipboard`) so you cannot copy the public key from
 the terminal to your host browser directly. Use `curl` to add the key to GitHub
 via the API instead — GitHub HTTPS is whitelisted by the egress firewall.
+
+### Quick way — `chipcraft-github-ssh-setup`
+
+Wraps steps 1-3 below into one command: generates an ed25519 key if one
+doesn't already exist, uploads it to your GitHub account, and verifies it.
+
+```bash
+chipcraft-github-ssh-setup <GITHUB_PERSONAL_TOKEN> ["key title"]
+```
+
+Needs a Personal Access Token with the `write:public_key` scope — see Step 2
+below for where to create one. The manual steps are below for reference.
 
 ### Step 1 — Generate the key
 
