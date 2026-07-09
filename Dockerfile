@@ -41,6 +41,11 @@ RUN apt-get update \
         vim \
         vim-gtk3 \
         mousepad \
+        # Icon themes (gnome-icon-theme is gone from Ubuntu repos since ~19.10;
+        # adwaita-icon-theme is its replacement) — fixes gvim toolbar buttons
+        # rendering as identical/generic squares under XFCE's GTK theme.
+        adwaita-icon-theme \
+        hicolor-icon-theme \
         # SSH client
         openssh-client \
         # Python
