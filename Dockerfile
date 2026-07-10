@@ -206,6 +206,15 @@ COPY novnc-rebrand.js /usr/share/novnc/chipcraft-rebrand.js
 RUN sed -i 's#</body>#<script src="chipcraft-rebrand.js"></script></body>#' \
         /usr/share/novnc/vnc.html
 
+# Hide the Clipboard button/panel in the noVNC sidebar. It's a client-side
+# text sync between the browser and the remote desktop, independent of
+# Xvnc's -noclipboard flag (entrypoint.sh) — leaving it visible would give
+# students another path to copy decrypted text out of the container.
+# #noVNC_clipboard_button / #noVNC_clipboard are noVNC's own stable IDs
+# (referenced by its ui.js), so a CSS hide is safe across point releases.
+RUN sed -i 's|</body>|<style>#noVNC_clipboard_button,#noVNC_clipboard{display:none!important}</style></body>|' \
+        /usr/share/novnc/vnc.html
+
 EXPOSE 6080
 
 USER ubuntu
