@@ -50,6 +50,7 @@ find "$BUILD" -mindepth 1 -maxdepth 1 -type d | while IFS= read -r d; do
 done
 
 KEY=$(cat "$KEYFILE")
+STUDENT="${GITHUB_USER:-unknown}"
 count=0
 while IFS= read -r enc; do
     case "$enc" in
@@ -64,7 +65,12 @@ while IFS= read -r enc; do
     esac
     out="$BUILD/${rel%.enc}"
     mkdir -p "$(dirname "$out")"
-    if openssl enc -d -aes-256-cbc -pbkdf2 -k "$KEY" -in "$enc" -out "$out" 2>/dev/null; then
+    # Watermark on the way out, same as the gvim decrypt path — this bulk
+    # copy sits on disk for the whole session (see header comment above), so
+    # it's the plaintext most reachable outside gvim entirely, and needs the
+    # same per-student trace as anything gvim ever writes.
+    if openssl enc -d -aes-256-cbc -pbkdf2 -k "$KEY" -in "$enc" 2>/dev/null \
+        | python3 /usr/local/bin/watermark.py encode "$STUDENT" > "$out"; then
         count=$((count + 1))
     fi
 done < <(find "$WORK" -path "$BUILD" -prune -o -path "$WORK/.git" -prune -o -type f -name '*.enc' -print)
