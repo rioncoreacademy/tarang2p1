@@ -199,9 +199,11 @@ COPY novnc-index.html /usr/share/novnc/index.html
 RUN sed -i "s/UI.initSetting('resize', 'off');/UI.initSetting('resize', 'remote');/" \
         /usr/share/novnc/app/ui.js
 
-# Rebrand the stock noVNC connect screen's "noVNC" logo to "Tarang2p1".
-# See novnc-rebrand.js header for why this is a runtime text-replace instead
-# of patching vnc.html's markup directly (version-fragile).
+# Rebrand the stock noVNC connect screen: hide the "noVNC" logo (the
+# background image below already carries the RionCore Academy branding, so
+# a second on-screen logo just visually collides with it). See
+# novnc-rebrand.js header for why this is a runtime text-search instead of
+# patching vnc.html's markup directly (version-fragile).
 COPY novnc-rebrand.js /usr/share/novnc/tarang2-dp1-rebrand.js
 RUN sed -i 's#</body>#<script src="tarang2-dp1-rebrand.js"></script></body>#' \
         /usr/share/novnc/vnc.html
@@ -211,6 +213,26 @@ RUN sed -i 's#</body>#<script src="tarang2-dp1-rebrand.js"></script></body>#' \
 # every container start rather than us guessing a per-user default.
 COPY vnc_background.png /usr/share/backgrounds/tarang2p1-background.png
 RUN chmod 444 /usr/share/backgrounds/tarang2p1-background.png
+
+# RionCore Academy branding on the noVNC pre-connect landing page.
+# Deliberately a DIFFERENT image (vnc_background_1.png) than the desktop
+# wallpaper above, by request. Has to live under /usr/share/novnc/ since
+# that's the only directory websockify's static file server
+# (--web=/usr/share/novnc/) actually serves over HTTP.
+COPY vnc_background_1.png /usr/share/novnc/vnc_background_1.png
+RUN chmod 444 /usr/share/novnc/vnc_background_1.png
+
+# Montserrat (SIL OFL licensed, github.com/google/fonts) to match the
+# branding image's own typeface. Bundled as a font file rather than a
+# Google Fonts <link> since the running container's egress firewall only
+# allows GitHub/Cloudflare — a CDN font request would just hang.
+COPY Montserrat-Variable.ttf /usr/share/novnc/Montserrat-Variable.ttf
+RUN chmod 444 /usr/share/novnc/Montserrat-Variable.ttf
+
+RUN sed -i 's|<img src="app/images/connect.svg"> Connect|<img src="app/images/connect.svg"> VNC - Start Session|' \
+        /usr/share/novnc/vnc.html
+RUN sed -i 's|<body>|<body><style>#noVNC_container{background-color:transparent!important}@font-face{font-family:Montserrat;src:url(Montserrat-Variable.ttf);font-weight:400 800}body{font-family:Montserrat,sans-serif}#noVNC_connect_dlg.noVNC_open{transform:translateY(-8vh) translateX(14vw) scale(1,1)!important}#noVNC_connect_button{background-color:#facc15!important;color:#1a1a1a!important;font-weight:bold!important;font-size:24px!important}#noVNC_connect_button div{background:#facc15!important;border-color:#a16207!important}</style><img src="vnc_background_1.png" style="position:fixed;top:5vh;left:5vw;width:90vw;height:90vh;object-fit:contain;z-index:-1;pointer-events:none">|' \
+        /usr/share/novnc/vnc.html
 
 # Hide the Clipboard button/panel in the noVNC sidebar. It's a client-side
 # text sync between the browser and the remote desktop, independent of

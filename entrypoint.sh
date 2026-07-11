@@ -181,23 +181,27 @@ DISPLAY=:1 XDG_RUNTIME_DIR=/tmp/runtime-ubuntu \
     dbus-launch --exit-with-session startxfce4 >> /tmp/xfce.log 2>&1 &
 
 # xfdesktop's backdrop properties are keyed by the actual RandR-detected
-# monitor name (e.g. "monitorVNC-0"), which varies by VNC server/version and
-# can't be predicted ahead of time — the xfce4-desktop.xml seed above only
-# covers the common "monitor0" case. Wait for xfdesktop to register its real
-# property paths, then force every one of them onto the same background, so
-# the branded wallpaper applies regardless of what xfdesktop actually named
-# the monitor.
+# monitor name (confirmed to be "monitorVNC-0" for TigerVNC, not "monitor0"
+# — and it registers separate entries per workspace, e.g. workspace0..3).
+# The xfce4-desktop.xml seed above only covers the "monitor0" fallback case.
+# A single "wait for any property to exist" check is NOT enough here: our
+# own seeded "monitor0" entries already exist at t=0, so that condition
+# would be satisfied immediately, before xfdesktop has even registered its
+# real "monitorVNC-0" entries — re-scan and re-apply repeatedly instead so
+# whatever shows up late (or on more workspaces) still gets caught.
 (
     export DISPLAY=:1 XDG_RUNTIME_DIR=/tmp/runtime-ubuntu
-    for i in $(seq 1 30); do
-        props="$(xfconf-query -c xfce4-desktop -p /backdrop -l 2>/dev/null | grep -E '/(last-image|image-style)$')"
-        [[ -n "$props" ]] && break
-        sleep 1
+    for i in $(seq 1 20); do
+        sleep 2
+        props="$(xfconf-query -c xfce4-desktop -p /backdrop -l 2>/dev/null)"
+        [[ -z "$props" ]] && continue
+        while read -r p; do
+            case "$p" in
+                */last-image)  xfconf-query -c xfce4-desktop -p "$p" -s /usr/share/backgrounds/tarang2p1-background.png ;;
+                */image-style) xfconf-query -c xfce4-desktop -p "$p" -s 4 ;;
+            esac
+        done <<< "$props"
     done
-    while read -r p; do
-        [[ "$p" == *last-image ]] && xfconf-query -c xfce4-desktop -p "$p" -s /usr/share/backgrounds/tarang2p1-background.png
-        [[ "$p" == *image-style ]] && xfconf-query -c xfce4-desktop -p "$p" -s 4
-    done <<< "$props"
 ) >> /tmp/xfce.log 2>&1 &
 
 # Wait for VNC to be ready
