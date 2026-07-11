@@ -75,7 +75,7 @@ threading.Thread(target=_cleanup_loop, daemon=True).start()
 
 def _launch_container(github_user: str, port: int, session_token: str) -> str:
     dc = docker.from_env()
-    vol = f"chipcraft-{github_user}"
+    vol = f"tarang2-dp1-{github_user}"
     try:
         dc.volumes.get(vol)
     except docker.errors.NotFound:
@@ -157,7 +157,7 @@ def _login_page() -> str:
     return """<!DOCTYPE html>
 <html>
 <head>
-  <title>ChipCraft — Learn with R. Babu</title>
+  <title>Tarang2_dp1 — Learn with R. Babu</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
@@ -177,7 +177,7 @@ def _login_page() -> str:
 <body>
   <div class="card">
     <div class="logo">&#128187;</div>
-    <h1>ChipCraft</h1>
+    <h1>Tarang2_dp1</h1>
     <p>Learn Digital Design &amp; VLSI with R. Babu</p>
     <a href="/login" class="btn">
       <svg width="20" height="20" viewBox="0 0 16 16" fill="white">
@@ -201,7 +201,7 @@ def _portal_page(github_user: str) -> str:
     return f"""<!DOCTYPE html>
 <html>
 <head>
-  <title>ChipCraft — Learn with R. Babu</title>
+  <title>Tarang2_dp1 — Learn with R. Babu</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     *{{margin:0;padding:0;box-sizing:border-box}}
@@ -226,7 +226,7 @@ def _portal_page(github_user: str) -> str:
 <body>
   <div class="card">
     <div class="logo">&#128187;</div>
-    <h1>Welcome to ChipCraft</h1>
+    <h1>Welcome to Tarang2_dp1</h1>
     <div class="user">@{github_user} &middot; Learn with R. Babu</div>
     <div class="tools">
       <span class="tag">Verilator</span>
@@ -235,7 +235,7 @@ def _portal_page(github_user: str) -> str:
       <span class="tag">gvim</span>
       <span class="tag">XFCE4 Desktop</span>
     </div>
-    <a href="/launch" class="btn">&#128640; Launch ChipCraft Lab</a>
+    <a href="/launch" class="btn">&#128640; Launch Tarang2_dp1 Lab</a>
     <a href="/logout" class="btn btn-out">Logout</a>
   </div>
 </body>
@@ -246,7 +246,7 @@ def _busy_page() -> str:
     return """<!DOCTYPE html>
 <html>
 <head>
-  <title>ChipCraft — No Desktops Available</title>
+  <title>Tarang2_dp1 — No Desktops Available</title>
   <style>
     body{background:#0d1117;color:#e6edf3;font-family:-apple-system,sans-serif;
          display:flex;align-items:center;justify-content:center;min-height:100vh}

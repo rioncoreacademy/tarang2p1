@@ -1,0 +1,6 @@
+# Tarang2_dp1 system-level gitignore — applies to ALL repos, cannot be overridden by students.
+# This file is at /etc/tarang2-dp1-gitignore (root-owned, read-only).
+*.v
+*.vcd
+*.vvp
+obj_dir/

@@ -1,13 +1,13 @@
 #!/bin/bash
-# ChipCraft Lab — vi / vim / gvim wrapper
+# Tarang2_dp1 Lab — vi / vim / gvim wrapper
 #
 # Redirects any *.v file argument to *.v.enc so users can never open or
-# create a raw plaintext .v file under WORK. The chipcraft-crypt.vim plugin
+# create a raw plaintext .v file under WORK. The tarang2-dp1-crypt.vim plugin
 # then handles transparent in-memory decrypt (on open) and encrypt (on save).
 #
 # Exception: a *.v argument that resolves under $BUILD is passed through
 # unmodified. BUILD holds the real decrypted plaintext copies (see
-# chipcraft-decrypt-all.sh / chipcraft-sweep.sh) — chipcraft-crypt.vim's own
+# tarang2-dp1-decrypt-all.sh / tarang2-dp1-sweep.sh) — tarang2-dp1-crypt.vim's own
 # BufReadCmd/BufWriteCmd guards on build/** already handle those files
 # directly, including syncing edits back to the matching .enc in WORK.
 # Redirecting *.v -> *.v.enc for a BUILD path would try to open a file that

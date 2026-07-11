@@ -1,5 +1,5 @@
 #!/bin/bash
-# ChipCraft Lab — File Encryptor
+# Tarang2_dp1 Lab — File Encryptor
 # Run this on YOUR PC to encrypt lab files before sharing with students
 #
 # Usage:

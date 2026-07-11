@@ -1,7 +1,7 @@
 #!/bin/bash
-# ChipCraft Lab — decrypt/shred an entire subtree for multi-file build flows.
+# Tarang2_dp1 Lab — decrypt/shred an entire subtree for multi-file build flows.
 #
-# gvim (chipcraft-crypt.vim) handles single-file editing in memory; the
+# gvim (tarang2-dp1-crypt.vim) handles single-file editing in memory; the
 # top-level Makefile handles single-file iverilog compiles. Neither covers a
 # project like tarang2_dp1, whose own build/regression scripts (bash_proj,
 # compile.pl, regress.pl — themselves encrypted) need a whole subtree of
@@ -13,11 +13,11 @@
 # generalized to many files instead of one.
 #
 # Usage:
-#   chipcraft-tree shell tarang2_dp1   (recommended) decrypt, drop into a
+#   tarang2-dp1-tree shell tarang2_dp1   (recommended) decrypt, drop into a
 #                                      subshell cd'd into it, auto-shred on exit
-#   chipcraft-tree start tarang2_dp1   decrypt only — for scripted/non-interactive
+#   tarang2-dp1-tree start tarang2_dp1   decrypt only — for scripted/non-interactive
 #                                      use; YOU must remember to run `stop`
-#   chipcraft-tree stop  tarang2_dp1   shred ~/lab/build/tarang2_dp1
+#   tarang2-dp1-tree stop  tarang2_dp1   shred ~/lab/build/tarang2_dp1
 #
 # `shell` is preferred: a forgotten `stop` after `start` leaves real plaintext
 # sitting on disk for however long the rest of the session runs. `shell`
@@ -26,7 +26,7 @@
 # be trapped by any process — that's a kernel-level limit, not specific to
 # this script.)
 #
-# WORK can be overridden: WORK=~/mywork chipcraft-tree start foo
+# WORK can be overridden: WORK=~/mywork tarang2-dp1-tree start foo
 
 set -euo pipefail
 
@@ -35,14 +35,14 @@ BUILD="${BUILD:-/workspaces/projects/build}"
 KEYFILE="$HOME/.rbk_state"
 
 usage() {
-    echo "Usage: chipcraft-tree {shell|start|stop} <subtree>" >&2
+    echo "Usage: tarang2-dp1-tree {shell|start|stop} <subtree>" >&2
     exit 1
 }
 
 _decrypt_subtree() {
     local src="$1" dst="$2"
-    [[ -d "$src" ]] || { echo "ChipCraft: no such folder: $src" >&2; exit 1; }
-    [[ -f "$KEYFILE" ]] || { echo "ChipCraft: no key at $KEYFILE — run inside the lab container." >&2; exit 1; }
+    [[ -d "$src" ]] || { echo "Tarang2_dp1: no such folder: $src" >&2; exit 1; }
+    [[ -f "$KEYFILE" ]] || { echo "Tarang2_dp1: no key at $KEYFILE — run inside the lab container." >&2; exit 1; }
 
     # Temporarily unlock build so we can write into it
     chmod -R u+w "$BUILD" 2>/dev/null || true
@@ -62,7 +62,7 @@ _decrypt_subtree() {
     done < <(find "$src" -name '*.enc')
     unset key
 
-    [[ "$found" -eq 1 ]] || { echo "ChipCraft: no .enc files found under $src" >&2; exit 1; }
+    [[ "$found" -eq 1 ]] || { echo "Tarang2_dp1: no .enc files found under $src" >&2; exit 1; }
 }
 
 _shred_subtree() {
@@ -90,7 +90,7 @@ case "$CMD" in
     start)
         _decrypt_subtree "$SRC" "$DST"
         echo "[lab] Decrypted $SUBTREE -> $DST"
-        echo "[lab] Remember: chipcraft-tree stop $SUBTREE when you're done."
+        echo "[lab] Remember: tarang2-dp1-tree stop $SUBTREE when you're done."
         ;;
     stop)
         _shred_subtree "$DST"

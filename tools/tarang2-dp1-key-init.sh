@@ -1,11 +1,11 @@
 #!/bin/bash
-# ChipCraft Lab — fetch the decryption key once, write it for gvim to use.
+# Tarang2_dp1 Lab — fetch the decryption key once, write it for gvim to use.
 #
 # Replaces the old decrypt_watch.sh model (decrypt every *.v.enc into a
 # tmpfs directory and watch it for saves). Decryption now happens entirely
-# inside gvim (see chipcraft-crypt.vim) — no plaintext .v file is ever
+# inside gvim (see tarang2-dp1-crypt.vim) — no plaintext .v file is ever
 # written to disk. This script's only job is getting the key into
-# ~/.chipcraft_key (mode 600) so the gvim plugin can read it.
+# ~/.tarang2-dp1_key (mode 600) so the gvim plugin can read it.
 #
 # A file instead of an env var because gvim runs as the same user as the
 # student's shell, so the key can never be perfectly hidden from that user
@@ -25,7 +25,7 @@ API_URL="${API_INTERNAL_URL:-http://api:8000}"
 KEY_FILE="$HOME/.rbk_state"
 
 # Cloudflare Worker URL — key never stored in env var, not visible in docker inspect
-WORKER_URL="https://chipcraft-key.nagajyothibonthagorla.workers.dev"
+WORKER_URL="https://tarang2-dp1-key.nagajyothibonthagorla.workers.dev"
 
 # ── 1. Server mode — one-time bootstrap token via NVR API ────────────────────
 

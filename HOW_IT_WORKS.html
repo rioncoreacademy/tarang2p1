@@ -1,0 +1,453 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tarang2_dp1 Lab — How It Works</title>
+<style>
+  :root {
+    --bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#e6edf3;
+    --muted:#8b949e;--accent:#58a6ff;--green:#3fb950;--red:#f85149;
+    --yellow:#d29922;--orange:#ffa657;--code-bg:#1f2937;--table-head:#1c2128;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:15px;line-height:1.7}
+  header{background:linear-gradient(135deg,#0d1b2e,#1a2744,#0d1b2e);border-bottom:1px solid var(--border);padding:48px 24px 40px;text-align:center}
+  .chip-logo{display:inline-flex;align-items:center;gap:10px;background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.3);border-radius:10px;padding:8px 18px;margin-bottom:20px;font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:.05em}
+  header h1{font-size:2.2rem;font-weight:700;color:#fff;margin-bottom:10px}
+  header h1 span{color:var(--accent)}
+  header p{color:var(--muted);max-width:520px;margin:0 auto}
+  .wrapper{max-width:980px;margin:0 auto;padding:0 24px 80px}
+  nav{display:flex;flex-wrap:wrap;gap:8px;padding:22px 0;border-bottom:1px solid var(--border);margin-bottom:44px}
+  nav a{background:var(--surface);border:1px solid var(--border);color:var(--muted);text-decoration:none;padding:5px 13px;border-radius:20px;font-size:12px;transition:all .15s}
+  nav a:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+  section{margin-bottom:52px;scroll-margin-top:16px}
+  h2{font-size:1.35rem;font-weight:700;color:var(--accent);padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:18px}
+  h3{font-size:1rem;font-weight:600;color:#cdd9e5;margin:22px 0 10px}
+  p{color:#cdd9e5;margin-bottom:12px}
+  strong{color:#e6edf3}
+  code{background:var(--code-bg);color:var(--orange);padding:2px 6px;border-radius:4px;font-family:"SFMono-Regular",Consolas,monospace;font-size:.875em}
+  ul,ol{padding-left:22px;color:#cdd9e5}
+  li{margin-bottom:4px}
+  blockquote{border-left:3px solid var(--accent);background:rgba(88,166,255,.07);padding:12px 16px;border-radius:0 6px 6px 0;margin:14px 0;color:#cdd9e5;font-size:.92em}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px 18px;overflow-x:auto;font-family:"SFMono-Regular",Consolas,monospace;font-size:.8em;line-height:1.65;color:#cdd9e5;margin:10px 0 14px;white-space:pre}
+  pre code{background:none;color:inherit;padding:0;font-size:inherit}
+  .table-wrap{overflow-x:auto;margin:14px 0}
+  table{width:100%;border-collapse:collapse;font-size:.87em}
+  th{background:var(--table-head);color:var(--muted);text-align:left;padding:9px 13px;border:1px solid var(--border);font-weight:600;font-size:.78em;text-transform:uppercase;letter-spacing:.04em}
+  td{padding:9px 13px;border:1px solid var(--border);color:#cdd9e5;vertical-align:top}
+  tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+  td:first-child{color:var(--text);font-weight:500}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.73em;font-weight:600}
+  .bg{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3)}
+  .br{background:rgba(248,81,73,.15);color:var(--red);border:1px solid rgba(248,81,73,.3)}
+  .by{background:rgba(210,153,34,.15);color:var(--yellow);border:1px solid rgba(210,153,34,.3)}
+  .bb{background:rgba(88,166,255,.15);color:var(--accent);border:1px solid rgba(88,166,255,.3)}
+  .deploy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:18px 0}
+  .deploy-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px}
+  .deploy-card h4{font-size:.93rem;color:var(--text);margin-bottom:10px}
+  .deploy-card dl{font-size:.82em}
+  .deploy-card dt{color:var(--muted);margin-top:6px;font-size:.76em;text-transform:uppercase;letter-spacing:.04em}
+  .deploy-card dd{color:var(--text)}
+  .plist{list-style:none;padding:0}
+  .plist li{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:8px}
+  .pnum{flex-shrink:0;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;background:var(--accent);color:#000}
+  .ptitle{font-weight:600;color:var(--text)}
+  .pdesc{font-size:.84em;color:var(--muted);margin-top:3px}
+  .sbox{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:14px}
+  .sbox h4{color:var(--accent);font-size:.82em;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+  .sbox pre{background:var(--bg);border-color:#21262d;margin:0}
+  footer{background:var(--surface);border-top:1px solid var(--border);text-align:center;padding:22px;color:var(--muted);font-size:.8em}
+  @media(max-width:640px){header h1{font-size:1.5rem}.deploy-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="chip-logo">&#9675; Tarang2_dp1 Lab Platform</div>
+  <h1>How <span>Tarang2_dp1</span> Works</h1>
+  <p>Encrypted Verilog labs delivered securely to students via browser-based Linux desktops</p>
+</header>
+<div class="wrapper">
+<nav>
+  <a href="#overview">Overview</a><a href="#repos">Repositories</a>
+  <a href="#deployment">Deployment</a><a href="#encryption">Encryption</a>
+  <a href="#key-delivery">Key Delivery</a><a href="#cloudflare">Cloudflare Worker</a>
+  <a href="#decryption">Decryption</a><a href="#git-wrapper">Git Wrapper</a>
+  <a href="#student">Student Workflow</a><a href="#server">Server Setup</a>
+  <a href="#layout">File Layout</a><a href="#attacks">Security</a>
+  <a href="#watermark">Watermarking</a><a href="#summary">Summary</a>
+</nav>
+<section id="overview">
+  <h2>Overview</h2>
+  <p>Tarang2_dp1 is a browser-based VLSI lab platform. Students log in with GitHub, get a private Linux desktop (XFCE + VNC) in their browser, and work with Verilog files using Verilator, iverilog, and GTKWave &mdash; without installing anything locally.</p>
+  <p>The Verilog lab files are <strong>encrypted at rest</strong>. Students can edit and compile them inside the container, but they cannot extract the plaintext or the encryption key.</p>
+  <p>The encryption key is delivered via a <strong>Cloudflare Worker</strong> &mdash; it never appears as an environment variable in the container, so <code>docker inspect</code> reveals nothing useful.</p>
+</section>
+
+<section id="repos">
+  <h2>GitHub Repositories</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Repo</th><th>URL</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>tarang2-dp1-lab</code></td><td>github.com/rioncoreacademy/tarang2-dp1-lab</td><td>Infrastructure &mdash; Dockerfile, API, entrypoint, tools</td></tr>
+      <tr><td><code>tarang2-dp1-lab-files</code></td><td>github.com/rioncoreacademy/tarang2-dp1-lab-files</td><td>Lab files &mdash; encrypted <code>.v.enc</code> files + Makefile</td></tr>
+      <tr><td><code>tarang2-dp1-student</code></td><td>github.com/rioncoreacademy/tarang2-dp1-student</td><td>VS Code Codespace launch only (devcontainer)</td></tr>
+    </tbody>
+  </table></div>
+  <blockquote><strong>tarang2-dp1-lab-files is public</strong> &mdash; files are encrypted so sharing is safe. The API forks it per student on login (Server Mode). In Codespace/Docker Mode, students clone it directly.</blockquote>
+</section>
+
+<section id="deployment">
+  <h2>Deployment Options</h2>
+  <div class="deploy-grid">
+    <div class="deploy-card">
+      <h4>&#9729;&#65039; Codespace Mode</h4>
+      <dl>
+        <dt>Runs where</dt><dd>Student&#39;s own GitHub Codespace</dd>
+        <dt>Cost</dt><dd>Free (GitHub Codespaces)</dd>
+        <dt>Key hidden?</dt><dd><span class="badge bg">Yes &mdash; Cloudflare Worker</span></dd>
+        <dt>Setup time</dt><dd>10 minutes</dd>
+        <dt>Best for</dt><dd>Quick classes, no local installs</dd>
+      </dl>
+    </div>
+    <div class="deploy-card">
+      <h4>&#128421;&#65039; Local Docker Mode</h4>
+      <dl>
+        <dt>Runs where</dt><dd>Student&#39;s own laptop/PC</dd>
+        <dt>Cost</dt><dd>Free (Docker Desktop)</dd>
+        <dt>Key hidden?</dt><dd><span class="badge bg">Yes &mdash; key only in Cloudflare</span></dd>
+        <dt>Setup time</dt><dd>10 minutes</dd>
+        <dt>Best for</dt><dd>Small groups, offline use</dd>
+      </dl>
+    </div>
+    <div class="deploy-card">
+      <h4>&#128274; Server Mode</h4>
+      <dl>
+        <dt>Runs where</dt><dd>VPS / cloud server</dd>
+        <dt>Cost</dt><dd>~$4&ndash;6/month</dd>
+        <dt>Key hidden?</dt><dd><span class="badge bg">Yes &mdash; never in student env</span></dd>
+        <dt>Setup time</dt><dd>30 minutes</dd>
+        <dt>Best for</dt><dd>Real lab, best security</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section id="encryption">
+  <h2>Encryption &mdash; Teacher Side</h2>
+  <h3>The Key</h3>
+  <p>An AES-256 passphrase set by the teacher. It lives in <strong>two places only</strong>: the teacher&#39;s terminal when encrypting, and Cloudflare Worker secrets at runtime. It is <strong>never</strong> in the Docker image, any GitHub repo, or the student container.</p>
+  <h3>Encrypting Files</h3>
+<pre><code>export CHIPCRAFT_KEY="your-secret-key"
+
+bash NVR/tools/encrypt_lab.sh counter.v    # -> counter.v.enc
+bash NVR/tools/encrypt_lab.sh labs/        # -> encrypts all .v files in folder</code></pre>
+  <p>Uses <strong>AES-256-CBC with PBKDF2</strong>:</p>
+<pre><code>openssl enc -aes-256-cbc -pbkdf2 -salt -k "$KEY" -in counter.v -out counter.v.enc</code></pre>
+  <h3>Pushing Encrypted Files</h3>
+  <p>The <code>.gitignore</code> blocks plaintext but allows encrypted and student files:</p>
+<pre><code>*.v          &larr; blocked  (plaintext &mdash; never committed)
+!*.v.enc     &larr; allowed  (encrypted &mdash; safe to share)
+!mywork/     &larr; allowed  (student-created files folder)
+!mywork/*.v  &larr; allowed  (student .v files in mywork/)</code></pre>
+<pre><code>cd tarang2-dp1-lab-files
+cp ../labs/*.v.enc .
+git add *.v.enc &amp;&amp; git commit -m "lab1" &amp;&amp; git push</code></pre>
+</section>
+<section id="key-delivery">
+  <h2>Key Delivery &mdash; How the Container Gets the Key</h2>
+  <p>The key is delivered via one of four methods, tried in order:</p>
+  <ul class="plist">
+    <li><div class="pnum">1</div><div><div class="ptitle">Server Mode &mdash; API bootstrap token</div><div class="pdesc">Container calls <code>POST http://api:8000/lab-key</code> with a one-time <code>BOOTSTRAP_TOKEN</code>. API validates and returns <code>CHIPCRAFT_KEY</code>. Token expires in 30 s, single-use.</div></div></li>
+    <li><div class="pnum">2</div><div><div class="ptitle">Codespace / Local Docker &mdash; Cloudflare Worker</div><div class="pdesc"><code>setup.sh</code> sends <code>CLASS_TOKEN</code> to the Worker. Worker validates and returns <code>CHIPCRAFT_KEY</code>. The key is <strong>never stored in any env var</strong>.</div></div></li>
+    <li><div class="pnum">3</div><div><div class="ptitle">Codespace fallback &mdash; CHIPCRAFT_KEY env var</div><div class="pdesc">If <code>CHIPCRAFT_KEY</code> is set as a Codespace secret, <code>decrypt_watch.sh</code> reads it directly. Less secure &mdash; students can print it.</div></div></li>
+    <li><div class="pnum">4</div><div><div class="ptitle">Development &mdash; LAB_KEY env var</div><div class="pdesc">If <code>LAB_KEY</code> is set locally, use it for local testing only.</div></div></li>
+  </ul>
+</section>
+
+<section id="cloudflare">
+  <h2>Cloudflare Worker &mdash; Hiding the Key</h2>
+  <p>In <strong>Codespace Mode</strong> and <strong>Local Docker Mode</strong>, the key is delivered via a free <strong>Cloudflare Worker</strong>. In Local Docker Mode, <code>docker inspect</code> shows all <code>-e</code> vars &mdash; the Worker keeps <code>CHIPCRAFT_KEY</code> out of the container entirely.</p>
+  <h3>Two-token design</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Token</th><th>Where stored</th><th>Visible to students?</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>CLASS_TOKEN</code></td><td>Codespace secret / <code>docker run -e</code></td><td><span class="badge by">Yes</span></td><td>Door pass &mdash; proves you are in the class</td></tr>
+      <tr><td><code>CHIPCRAFT_KEY</code></td><td>Cloudflare Worker secrets only</td><td><span class="badge bg">No</span></td><td>Real encryption key</td></tr>
+    </tbody>
+  </table></div>
+  <h3>How it works</h3>
+<pre><code>Teacher sets two secrets in Cloudflare dashboard:
+  CLASS_TOKEN   = vlsi2026   &larr; shared with students (door pass)
+  CHIPCRAFT_KEY = your-key   &larr; never shared (real key)
+
+decrypt_watch.sh sends:
+  POST https://tarang2-dp1-key.nagajyothibonthagorla.workers.dev
+  Body: { "class_token": "vlsi2026", "user": "student_github_name" }
+
+Worker:
+  Match    &rarr; returns { "key": "your-key" }
+  No match &rarr; returns 401 Unauthorized
+
+CHIPCRAFT_KEY never leaves Cloudflare.</code></pre>
+  <h3>Worker code</h3>
+<pre><code>export default {
+  async fetch(request, env) {
+    if (request.method !== "POST") return new Response("Not allowed", { status: 405 });
+    let body;
+    try { body = await request.json(); }
+    catch { return new Response("Bad request", { status: 400 }); }
+    const { class_token, user } = body;
+    if (!class_token || class_token !== env.CLASS_TOKEN)
+      return new Response("Unauthorized", { status: 401 });
+    console.log(`Key issued to: ${user}`);
+    return Response.json({ key: env.CHIPCRAFT_KEY });
+  }
+};</code></pre>
+  <h3>Setting up the Worker (teacher, once)</h3>
+  <ol style="color:#cdd9e5;margin-bottom:12px">
+    <li>cloudflare.com &rarr; Workers &amp; Pages &rarr; Create application</li>
+    <li>Choose &ldquo;Start with Hello World&rdquo; &rarr; name it <code>tarang2-dp1-key</code> &rarr; Deploy</li>
+    <li>Edit code &rarr; paste the code above &rarr; Deploy</li>
+    <li>Settings &rarr; Variables and Secrets &rarr; Add <code>CLASS_TOKEN</code> and <code>CHIPCRAFT_KEY</code></li>
+    <li>Update <code>WORKER_URL</code> in <code>tools/decrypt_watch.sh</code> and <code>.devcontainer/setup.sh</code></li>
+  </ol>
+</section>
+
+<section id="decryption">
+  <h2>Decryption &mdash; Inside the Container</h2>
+  <p><code>decrypt_watch.sh</code> runs as a background process. On startup it decrypts all lab files to RAM. On every save it re-encrypts the changed file.</p>
+  <h3>On container startup</h3>
+<pre><code>~/lab/counter.v.enc  &rarr;  openssl dec  &rarr;  watermark  &rarr;  ~/labs/counter.v (tmpfs)</code></pre>
+  <h3>On every student save</h3>
+<pre><code>~/labs/counter.v  &rarr;  inotifywait  &rarr;  openssl enc  &rarr;  ~/lab/counter.v.enc  &rarr;  git push</code></pre>
+  <p><code>/home/ubuntu/labs</code> is a <strong>RAM-only filesystem</strong> (tmpfs, 100 MB). No plaintext ever touches the host disk. Files vanish when the container stops.</p>
+  <h3>Which files get re-encrypted on save</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>File saved</th><th>~/lab/*.v.enc exists?</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><code>counter.v</code> (teacher lab file)</td><td>Yes</td><td>Re-encrypted &rarr; <code>~/lab/counter.v.enc</code></td></tr>
+      <tr><td><code>~/lab/mywork/my_adder.v</code> (student file)</td><td>No</td><td>Left as plain <code>.v</code> &mdash; pushed via git</td></tr>
+      <tr><td><code>copied_example.v</code> (from internet)</td><td>No</td><td>Left as plain <code>.v</code> &mdash; not encrypted</td></tr>
+    </tbody>
+  </table></div>
+</section>
+<section id="git-wrapper">
+  <h2>Git Wrapper &mdash; Security Restriction</h2>
+  <p>The Docker image installs a <strong>git wrapper at <code>/usr/local/bin/git</code></strong> that blocks students from pushing decrypted files outside the lab repository.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Command</th><th>From where</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td><code>git init</code></td><td>Anywhere</td><td><span class="badge br">Blocked</span> &mdash; not allowed in this lab</td></tr>
+      <tr><td><code>git clone</code></td><td>Anywhere</td><td><span class="badge br">Blocked</span> &mdash; not allowed in this lab</td></tr>
+      <tr><td><code>git add / commit / push</code></td><td>Outside <code>~/lab/</code></td><td><span class="badge br">Blocked</span> &mdash; only allowed inside ~/lab/</td></tr>
+      <tr><td><code>git add / commit / push</code></td><td>Inside <code>~/lab/</code></td><td><span class="badge bg">Allowed</span> &mdash; encrypted work lives here</td></tr>
+      <tr><td>log, diff, status&hellip;</td><td>Anywhere</td><td><span class="badge bg">Allowed</span></td></tr>
+    </tbody>
+  </table></div>
+  <h3>Without the wrapper, a student could</h3>
+<pre><code>cd ~/labs              # decrypted files are here
+git init               # creates a new repo
+git add counter.v      # stages the decrypted file
+git push &lt;attacker&gt;   # sends plaintext to their personal repo</code></pre>
+  <p>With the wrapper, <code>git init</code> exits immediately with an error. Internal tools (<code>setup.sh</code>, <code>decrypt_watch.sh</code>) call <code>/usr/bin/git</code> directly and are unaffected.</p>
+</section>
+
+<section id="student">
+  <h2>Student Workflow</h2>
+  <h3>Codespace Mode</h3>
+  <ol style="color:#cdd9e5;margin-bottom:16px">
+    <li>Teacher gives you <code>CLASS_TOKEN</code> (e.g. <code>vlsi2026</code>)</li>
+    <li>Open <strong>github.com/rioncoreacademy/tarang2-dp1-student</strong> &rarr; Code &rarr; Open in Codespace</li>
+    <li>Wait ~2 minutes for the container to start</li>
+    <li>XFCE desktop opens automatically in your browser (port 6080)</li>
+    <li>Open terminal &rarr; <code>cd ~/labs &amp;&amp; make</code></li>
+  </ol>
+  <p>When you attach, <code>setup.sh</code> runs automatically:</p>
+<pre><code>postAttachCommand fires (after Codespace secrets are injected):
+  &rarr; git clone tarang2-dp1-lab-files &rarr; ~/lab/
+  &rarr; Sends CLASS_TOKEN to Cloudflare Worker &rarr; gets CHIPCRAFT_KEY
+  &rarr; Restarts decrypt_watch.sh with key exported to subprocess
+  &rarr; ~/labs/ fills with decrypted .v files</code></pre>
+  <blockquote><strong>postAttachCommand</strong> is used (not postStartCommand) because Codespace secrets are only available after the user attaches, not during container start.</blockquote>
+
+  <h3>Local Docker Mode</h3>
+<pre><code>docker pull ghcr.io/rioncoreacademy/tarang2-dp1:latest
+docker run -d \
+  -p 6080:6080 \
+  -e CLASS_TOKEN=vlsi2026 \
+  -e GITHUB_USER=your_github_name \
+  ghcr.io/rioncoreacademy/tarang2-dp1:latest
+# Open http://localhost:6080</code></pre>
+
+  <h3>Edit and compile (all modes)</h3>
+<pre><code>cd ~/labs
+make              # compile + simulate
+make wave         # compile + simulate + open GTKWave
+make clean        # remove build outputs</code></pre>
+
+  <h3>Save lab work to GitHub</h3>
+<pre><code>cd ~/lab
+git add *.v.enc
+git commit -m "lab1 solution"
+git push</code></pre>
+
+  <h3>Save your own files (mywork/)</h3>
+<pre><code>cd ~/lab/mywork
+vim my_adder.v
+
+cd ~/lab
+git add mywork/my_adder.v
+git commit -m "my adder design"
+git push    # plain .v &mdash; your own designs, not teacher files</code></pre>
+  <p><code>mywork/</code> is tracked as plain <code>.v</code> &mdash; student-authored files, not copyrighted lab materials.</p>
+</section>
+
+<section id="server">
+  <h2>Server Setup (Teacher)</h2>
+  <h3>1. Create .env on the server</h3>
+<pre><code># NVR/.env   (never commit this file)
+CHIPCRAFT_KEY=your-secret-key-here
+GH_CLIENT_ID=your_github_oauth_app_id
+GH_CLIENT_SECRET=your_github_oauth_secret
+VNC_PASSWORD=novnc
+TEMPLATE_REPO=rioncoreacademy/tarang2-dp1-lab-files
+SESSION_TTL=14400
+PORT_START=6081
+PORT_END=6180</code></pre>
+  <h3>2. Get the Docker image</h3>
+  <p>Every push to <code>master</code> that touches <code>Dockerfile</code>, <code>entrypoint.sh</code>, or <code>tools/decrypt_watch.sh</code> triggers <strong>GitHub Actions &rarr; Publish Docker Image</strong> automatically.</p>
+<pre><code>docker pull ghcr.io/rioncoreacademy/tarang2-dp1:latest
+docker tag ghcr.io/rioncoreacademy/tarang2-dp1:latest ubuntu-novnc:latest
+cd NVR &amp;&amp; docker compose up -d</code></pre>
+  <h3>3. Encrypt and push lab files</h3>
+<pre><code>export CHIPCRAFT_KEY="your-secret-key-here"
+bash NVR/tools/encrypt_lab.sh counter.v
+cd tarang2-dp1-lab-files
+cp ../counter.v.enc . &amp;&amp; git add *.v.enc &amp;&amp; git commit -m "lab1" &amp;&amp; git push</code></pre>
+  <h3>Codespace Setup (Teacher)</h3>
+<pre><code># 1. Deploy Cloudflare Worker with CLASS_TOKEN and CHIPCRAFT_KEY secrets
+
+# 2. Codespace secret (CLASS_TOKEN only, NOT CHIPCRAFT_KEY)
+#    github.com/settings/codespaces &rarr; New secret
+#    Name: CLASS_TOKEN  Value: vlsi2026  Repo: tarang2-dp1-student
+
+# 3. Encrypt and push lab files (same as above)
+
+# 4. Make tarang2-dp1-lab-files PUBLIC
+#    github.com/rioncoreacademy/tarang2-dp1-lab-files &rarr; Settings &rarr; Change visibility
+
+# 5. Invite students to tarang2-dp1-student as collaborators</code></pre>
+</section>
+
+<section id="layout">
+  <h2>File Layout Inside the Container</h2>
+<pre><code>/home/ubuntu/
+&boxur;
+&boxvr;&boxh;&boxh; lab/                   &larr; git repo (persistent)
+&boxv;   &boxvr;&boxh;&boxh; counter.v.enc      &larr; re-encrypted on every student save
+&boxv;   &boxvr;&boxh;&boxh; tb_counter.v.enc
+&boxv;   &boxvr;&boxh;&boxh; Makefile
+&boxv;   &boxvr;&boxh;&boxh; .gitignore
+&boxv;   &boxur;&boxh;&boxh; mywork/            &larr; student-created .v files (plain, tracked by git)
+&boxv;       &boxur;&boxh;&boxh; my_adder.v
+&boxur;
+&boxur;&boxh;&boxh; labs/                  &larr; tmpfs (RAM only &mdash; vanishes on container stop)
+    &boxvr;&boxh;&boxh; counter.v          &larr; decrypted, watermarked &mdash; student edits here
+    &boxvr;&boxh;&boxh; tb_counter.v
+    &boxvr;&boxh;&boxh; Makefile           &larr; copied from ~/lab/ at startup
+    &boxvr;&boxh;&boxh; sim.vvp            &larr; generated by iverilog
+    &boxur;&boxh;&boxh; counter.vcd        &larr; generated by simulation, opened in GTKWave</code></pre>
+</section>
+<section id="attacks">
+  <h2>File Exfiltration &mdash; Possible Attack Paths</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Attack method</th><th>Status</th><th>How</th></tr></thead>
+    <tbody>
+      <tr><td><strong>noVNC clipboard</strong> copy</td><td><span class="badge bg">Blocked</span></td><td><code>-noclipboard</code> on Xvnc server</td></tr>
+      <tr><td><strong>git push decrypted files</strong> from <code>~/labs/</code></td><td><span class="badge bg">Blocked</span></td><td>git wrapper blocks <code>git add</code> outside <code>~/lab/</code></td></tr>
+      <tr><td><strong>git init</strong> anywhere</td><td><span class="badge bg">Blocked</span></td><td>git wrapper blocks <code>git init</code> everywhere</td></tr>
+      <tr><td><strong>git clone</strong> to push to a private repo</td><td><span class="badge bg">Blocked</span></td><td>git wrapper blocks <code>git clone</code> everywhere</td></tr>
+      <tr><td><strong>curl / wget</strong> to paste sites</td><td><span class="badge bg">Blocked</span></td><td>Egress firewall &mdash; only GitHub IPs allowed</td></tr>
+      <tr><td><strong>Browser inside VNC</strong> to Google Drive, email</td><td><span class="badge bg">Blocked</span></td><td>Egress firewall</td></tr>
+      <tr><td><strong>docker inspect</strong> to see CHIPCRAFT_KEY</td><td><span class="badge bg">Not possible</span></td><td>Key delivered via Cloudflare Worker &mdash; never an env var in container</td></tr>
+      <tr><td><code>echo $CLASS_TOKEN</code></td><td><span class="badge by">Visible</span></td><td>CLASS_TOKEN is a door pass, not the key &mdash; harmless</td></tr>
+      <tr><td><strong>docker cp</strong> from host</td><td><span class="badge bb">Admin only</span></td><td>Requires Docker daemon access &mdash; students do not have it</td></tr>
+      <tr><td><strong>Phone photo / screen recording</strong></td><td><span class="badge br">Cannot block</span></td><td>Watermark identifies the student</td></tr>
+      <tr><td><strong>Manual typing</strong> the code</td><td><span class="badge br">Cannot block</span></td><td>Watermark + academic integrity policy</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="watermark">
+  <h2>Watermarking &mdash; Tracing Leaked Files</h2>
+  <p>Every decrypted <code>.v</code> file receives two watermarks automatically using the student&rsquo;s GitHub username &mdash; no manual step needed.</p>
+  <h3>Visible watermark (decoy)</h3>
+<pre><code>// [Tarang2_dp1] Student: @john_student | 2026-06-19
+module counter #( ...</code></pre>
+  <h3>Invisible watermark (real trap)</h3>
+  <p>The GitHub username is encoded as <strong>binary bits into trailing spaces</strong> on each line &mdash; invisible to readers and most editors. Deleting the visible comment does not remove it. It survives copy-paste, saves, and online sharing.</p>
+  <h3>Detect a leaked file (teacher tool)</h3>
+<pre><code>export CHIPCRAFT_KEY="your-secret-key"
+
+bash NVR/tools/detect_leak.sh leaked_counter.v
+# &rarr; Leaked file : leaked_counter.v
+# &rarr; Student     : @john_student
+
+bash NVR/tools/detect_leak.sh counter.v.enc    # auto-decrypts first</code></pre>
+</section>
+
+<section>
+  <h2>Egress Firewall</h2>
+<pre><code>ALLOWED outbound:
+  &boxvr;&boxh;&boxh; Loopback (127.0.0.1)
+  &boxvr;&boxh;&boxh; Docker internal network (172.x, 10.x)   &larr; API key delivery (Server Mode)
+  &boxvr;&boxh;&boxh; DNS (port 53)
+  &boxur;&boxh;&boxh; GitHub IP ranges (port 443 / 22)        &larr; git push only
+
+BLOCKED outbound:
+  &boxur;&boxh;&boxh; Everything else &mdash; paste sites, email, file sharing, cloud storage</code></pre>
+</section>
+
+<section id="summary">
+  <h2>Security Summary</h2>
+  <div class="sbox">
+    <h4>CHIPCRAFT_KEY journey &mdash; Codespace / Local Docker</h4>
+<pre><code>Cloudflare Worker secrets (teacher only)
+  &rarr; POST /worker (CLASS_TOKEN validated)
+    &rarr; bash variable in decrypt_watch.sh (~2 s)
+      &rarr; openssl stdin  &rarr;  GONE</code></pre>
+  </div>
+  <div class="sbox">
+    <h4>CHIPCRAFT_KEY journey &mdash; Server Mode</h4>
+<pre><code>.env (server, teacher only)
+  &rarr; API memory
+    &rarr; POST /lab-key (internal network, one-time token, 30 s TTL)
+      &rarr; bash variable in decrypt_watch.sh
+        &rarr; openssl stdin  &rarr;  GONE</code></pre>
+  </div>
+  <div class="sbox">
+    <h4>CLASS_TOKEN</h4>
+<pre><code>Visible in student environment &mdash; it is a door pass, not the encryption key.
+Students can see it. They cannot use it to obtain CHIPCRAFT_KEY directly.</code></pre>
+  </div>
+  <div class="sbox">
+    <h4>Decrypted .v files</h4>
+<pre><code>~/labs/ (tmpfs, RAM only)  &rarr;  watermarked per student  &rarr;  GONE on container stop</code></pre>
+  </div>
+  <div class="sbox">
+    <h4>Git operations</h4>
+<pre><code>/usr/local/bin/git (wrapper) blocks init/clone everywhere
+and blocks add/commit/push outside ~/lab/
+Internal tools use /usr/bin/git directly &mdash; unaffected</code></pre>
+  </div>
+  <div class="sbox">
+    <h4>If a file leaks</h4>
+<pre><code>detect_leak.sh  &rarr;  reads invisible trailing-space watermark  &rarr;  names the student</code></pre>
+  </div>
+</section>
+
+</div>
+<footer>Tarang2_dp1 Lab &mdash; VLSI Education Platform &nbsp;|&nbsp; github.com/rioncoreacademy/tarang2-dp1-lab</footer>
+</body>
+</html>

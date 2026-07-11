@@ -8,16 +8,16 @@ on:
       - .github/workflows/publish-image.yml
       - Dockerfile
       - entrypoint.sh
-      - chipcraft-run.sh
+      - tarang2-dp1-run.sh
       - novnc-index.html
-      - tools/chipcraft-key-init.sh
-      - tools/chipcraft-tree.sh
-      - tools/chipcraft-decrypt-all.sh
-      - tools/chipcraft-sweep.sh
-      - tools/chipcraft-crypt.vim
-      - tools/chipcraft-vim-wrapper.sh
-      - tools/chipcraft-refresh-github-ips.sh
-      - tools/chipcraft-github-ssh-setup.sh
+      - tools/tarang2-dp1-key-init.sh
+      - tools/tarang2-dp1-tree.sh
+      - tools/tarang2-dp1-decrypt-all.sh
+      - tools/tarang2-dp1-sweep.sh
+      - tools/tarang2-dp1-crypt.vim
+      - tools/tarang2-dp1-vim-wrapper.sh
+      - tools/tarang2-dp1-refresh-github-ips.sh
+      - tools/tarang2-dp1-github-ssh-setup.sh
       - novnc-rebrand.js
 
 jobs:
@@ -48,7 +48,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/chipcraft
+          images: ghcr.io/${{ github.repository_owner }}/tarang2-dp1
           tags: |
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}

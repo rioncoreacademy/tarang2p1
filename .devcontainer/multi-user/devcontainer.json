@@ -1,5 +1,5 @@
 {
-  "name": "ChipCraft Lab — Multi-User Server",
+  "name": "Tarang2_dp1 Lab — Multi-User Server",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
   "features": {
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
@@ -7,7 +7,7 @@
   },
   "forwardPorts": [80, 6081, 6082, 6083, 6084, 6085],
   "portsAttributes": {
-    "80":   {"label": "ChipCraft Portal",  "onAutoForward": "openBrowser", "visibility": "public"},
+    "80":   {"label": "Tarang2_dp1 Portal",  "onAutoForward": "openBrowser", "visibility": "public"},
     "6081": {"label": "Lab Desktop 1", "visibility": "public"},
     "6082": {"label": "Lab Desktop 2", "visibility": "public"},
     "6083": {"label": "Lab Desktop 3", "visibility": "public"},

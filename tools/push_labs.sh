@@ -1,5 +1,5 @@
 #!/bin/bash
-# ChipCraft Lab — Encrypt & Push to GitHub
+# Tarang2_dp1 Lab — Encrypt & Push to GitHub
 #
 # Usage:
 #   bash push_labs.sh <source-folder>
@@ -12,8 +12,8 @@ set -e
 # ── Config ────────────────────────────────────────────────────────────────────
 KEY="${CHIPCRAFT_KEY:-$(echo "MjAyNi1SQmFidS1WTFNJLUxhYi1LZXk=" | base64 -d)}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-FILES_REPO="https://github.com/rioncoreacademy/chipcraft-lab-files.git"
-REPO_DIR="$(dirname "$SCRIPT_DIR")/chipcraft-lab-files"
+FILES_REPO="https://github.com/rioncoreacademy/tarang2-dp1-lab-files.git"
+REPO_DIR="$(dirname "$SCRIPT_DIR")/tarang2-dp1-lab-files"
 
 # ── Check argument ────────────────────────────────────────────────────────────
 if [[ -z "${1:-}" ]]; then
@@ -35,7 +35,7 @@ fi
 
 echo ""
 echo "========================================"
-echo "  ChipCraft Lab — Encrypt & Push"
+echo "  Tarang2_dp1 Lab — Encrypt & Push"
 echo "========================================"
 echo ""
 echo "  Source : $SOURCE"

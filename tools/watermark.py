@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-ChipCraft Lab — Invisible watermark via trailing-space steganography.
+Tarang2_dp1 Lab — Invisible watermark via trailing-space steganography.
 
 Encodes a student identifier as binary bits into trailing spaces on each line.
 The watermark is invisible to readers and survives copy-paste, editor saves,
 and deletion of the visible comment at the top of the file.
 
-Usage (from chipcraft-crypt.vim, via the %! filter):
+Usage (from tarang2-dp1-crypt.vim, via the %! filter):
   python3 watermark.py encode "github_user" < file.v > watermarked.v
 
 Usage (teacher detection tool):

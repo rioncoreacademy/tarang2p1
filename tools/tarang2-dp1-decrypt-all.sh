@@ -1,5 +1,5 @@
 #!/bin/bash
-# ChipCraft Lab — decrypt every *.enc under ~/lab into ~/lab/build once at
+# Tarang2_dp1 Lab — decrypt every *.enc under ~/lab into ~/lab/build once at
 # container startup, preserving directory structure, and leave it there for
 # the whole session. No shred, no session boundary.
 #
@@ -10,10 +10,10 @@
 # container lifetime once this runs — docker cp, the terminal, or any other
 # filesystem access can read it at any time, not just during a narrow
 # compile window. This was chosen explicitly in place of the session-scoped
-# chipcraft-tree model for projects like tarang2_dp1, to remove the
+# tarang2-dp1-tree model for projects like tarang2_dp1, to remove the
 # start/work/exit friction of that workflow.
 #
-# Editing still goes through gvim (chipcraft-crypt.vim) when working
+# Editing still goes through gvim (tarang2-dp1-crypt.vim) when working
 # directly on .enc files in ~/lab — this script only affects the bulk
 # decrypted copy in build, which is read/write but not re-encrypted on
 # change. Edit the real .enc source in ~/lab itself for changes to persist.
@@ -24,7 +24,7 @@ WORK="${WORK:-/workspaces/projects/.build.enc}"
 BUILD="${BUILD:-/workspaces/projects/build}"
 KEYFILE="$HOME/.rbk_state"
 
-# Wait for the key — chipcraft-key-init.sh may still be fetching it,
+# Wait for the key — tarang2-dp1-key-init.sh may still be fetching it,
 # especially in Server Mode where it depends on BOOTSTRAP_TOKEN being
 # exchanged after this container starts.
 tries=0

@@ -1,5 +1,5 @@
 #!/bin/bash
-# ChipCraft Lab — sweep watcher for WORK (.build.enc) and BUILD (build).
+# Tarang2_dp1 Lab — sweep watcher for WORK (.build.enc) and BUILD (build).
 #
 # WORK (.build.enc):
 #   - Plaintext .v files  → encrypt to .enc in WORK, copy .v to BUILD (writable), shred tmp
@@ -26,7 +26,7 @@ KEYFILE="$HOME/.rbk_state"
 SCRATCH="$BUILD/.sweep-tmp"
 ALLOWLIST=("Makefile" ".gitignore" ".gitattributes" "README.md")
 
-# Same source-file scope chipcraft-crypt.vim documents handling (Verilog,
+# Same source-file scope tarang2-dp1-crypt.vim documents handling (Verilog,
 # SystemVerilog, C, Perl, assembly, headers, sim scripts) — used to decide
 # whether a brand-new file with no matching .enc yet should be auto-encrypted.
 # Deliberately excludes build output (*.vvp, *.vcd, obj_dir/*.cpp, …), which

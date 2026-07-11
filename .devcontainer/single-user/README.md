@@ -1,4 +1,4 @@
-# ChipCraft Lab — Single-User Setup
+# Tarang2_dp1 Lab — Single-User Setup
 
 Each student gets their own isolated Codespace with a full XFCE4 desktop running in the browser via noVNC.
 
@@ -8,7 +8,7 @@ Each student gets their own isolated Codespace with a full XFCE4 desktop running
 Student opens repo → creates Codespace → XFCE4 desktop opens on port 6080
 ```
 
-- The devcontainer pulls `ghcr.io/rioncoreacademy/chipcraft:latest` from GitHub Container Registry
+- The devcontainer pulls `ghcr.io/rioncoreacademy/tarang2-dp1:latest` from GitHub Container Registry
 - `start.sh` launches TightVNC + websockify inside the container
 - Port 6080 is forwarded by Codespaces and opens automatically in the browser
 - No login required — password is `novnc`
@@ -22,9 +22,9 @@ Student opens repo → creates Codespace → XFCE4 desktop opens on port 6080
 
 ## Student Instructions
 
-1. Go to `https://github.com/rioncoreacademy/chipcraft-lab`
+1. Go to `https://github.com/rioncoreacademy/tarang2-dp1-lab`
 2. Click **Code → Codespaces → Create codespace on main**
-3. When prompted, select **"ChipCraft Lab — Digital Design & VLSI"**
+3. When prompted, select **"Tarang2_dp1 Lab — Digital Design & VLSI"**
 4. Wait ~2 minutes for the container to start
 5. Port 6080 opens automatically → click **Connect**
 6. Enter password: `novnc`
@@ -34,7 +34,7 @@ Student opens repo → creates Codespace → XFCE4 desktop opens on port 6080
 
 - Each student needs a **GitHub account**
 - The repo must be **public** (or students added as collaborators)
-- The GHCR image `ghcr.io/rioncoreacademy/chipcraft` must be **public**
+- The GHCR image `ghcr.io/rioncoreacademy/tarang2-dp1` must be **public**
 
 ## How to Make Repo & Image Public
 
@@ -42,7 +42,7 @@ Student opens repo → creates Codespace → XFCE4 desktop opens on port 6080
 GitHub → repo Settings → scroll to Danger Zone → **Change visibility → Public**
 
 **GHCR Image:**
-GitHub → your profile → Packages → `chipcraft` → Package Settings → **Change visibility → Public**
+GitHub → your profile → Packages → `tarang2-dp1` → Package Settings → **Change visibility → Public**
 
 ## How Many Students
 
@@ -60,7 +60,7 @@ Each Codespace runs independently so there is no limit on number of students —
 The image is built automatically by GitHub Actions when the `Dockerfile` changes:
 
 ```
-ghcr.io/rioncoreacademy/chipcraft:latest
+ghcr.io/rioncoreacademy/tarang2-dp1:latest
 ```
 
 Workflow: `.github/workflows/publish-image.yml`
@@ -107,7 +107,7 @@ curl -X POST \
   -H "Authorization: token GITHUB_PERSONAL_TOKEN" \
   -H "Content-Type: application/json" \
   https://api.github.com/user/keys \
-  -d "{\"title\":\"ChipCraft Lab\",\"key\":\"$(cat ~/.ssh/id_ed25519.pub)\"}"
+  -d "{\"title\":\"Tarang2_dp1 Lab\",\"key\":\"$(cat ~/.ssh/id_ed25519.pub)\"}"
 ```
 
 Get a token at: **github.com → Settings → Developer settings → Personal access tokens → New token** (scope: `write:public_key`)
@@ -116,7 +116,7 @@ Get a token at: **github.com → Settings → Developer settings → Personal ac
 
 **Desktop not loading:**
 ```bash
-export USER=ubuntu && bash /workspaces/chipcraft-lab/.devcontainer/single-user/start.sh
+export USER=ubuntu && bash /workspaces/tarang2-dp1-lab/.devcontainer/single-user/start.sh
 ```
 
 **Check if VNC is running:**

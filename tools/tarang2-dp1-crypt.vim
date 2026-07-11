@@ -1,4 +1,4 @@
-" ChipCraft Lab — transparent in-memory decrypt/encrypt for *.enc source files
+" Tarang2_dp1 Lab — transparent in-memory decrypt/encrypt for *.enc source files
 "
 " Plaintext is never written to any file. Reading a *.enc file decrypts it
 " straight into the Vim buffer via an openssl pipe; saving pipes the buffer
@@ -11,13 +11,13 @@
 " not source to decrypt and edit.
 "
 " The key is read from ~/.rbk_state (written once at container startup by
-" chipcraft-key-init.sh) rather than an environment variable, so it doesn't
+" tarang2-dp1-key-init.sh) rather than an environment variable, so it doesn't
 " show up in `env` or `docker inspect`.
 
-if exists('g:loaded_chipcraft_crypt')
+if exists('g:loaded_tarang2-dp1_crypt')
   finish
 endif
-let g:loaded_chipcraft_crypt = 1
+let g:loaded_tarang2-dp1_crypt = 1
 
 set viminfo=
 
@@ -64,7 +64,7 @@ function! s:Decrypt()
 
   let l:key = s:ReadKey()
   if empty(l:key)
-    echohl ErrorMsg | echom 'ChipCraft: could not read decryption key (~/.rbk_state missing)' | echohl None
+    echohl ErrorMsg | echom 'Tarang2_dp1: could not read decryption key (~/.rbk_state missing)' | echohl None
     return
   endif
 
@@ -76,7 +76,7 @@ function! s:Decrypt()
   silent execute '0r !openssl enc -d -aes-256-cbc -pbkdf2 -k ' . shellescape(l:key) .
         \ ' -in ' . shellescape(l:enc_path)
   if v:shell_error != 0
-    echohl ErrorMsg | echom 'ChipCraft: decrypt failed for ' . expand('%') | echohl None
+    echohl ErrorMsg | echom 'Tarang2_dp1: decrypt failed for ' . expand('%') | echohl None
     silent %delete _
     return
   endif
@@ -90,7 +90,7 @@ function! s:Decrypt()
 
   let l:ext = fnamemodify(s:InnerName(), ':e')
   if index(s:slashslash_comment_exts, l:ext) >= 0
-    call append(0, '// [ChipCraft] Student: @' . l:student . ' | ' . strftime('%Y-%m-%d'))
+    call append(0, '// [Tarang2_dp1] Student: @' . l:student . ' | ' . strftime('%Y-%m-%d'))
   endif
 
   " Detect filetype from the real filename (strip .enc) without reading it.
@@ -105,12 +105,12 @@ function! s:Encrypt()
 
   let l:key = s:ReadKey()
   if empty(l:key)
-    echohl ErrorMsg | echom 'ChipCraft: could not read encryption key — NOT SAVED' | echohl None
+    echohl ErrorMsg | echom 'Tarang2_dp1: could not read encryption key — NOT SAVED' | echohl None
     return
   endif
 
   let l:lines = getline(1, '$')
-  if len(l:lines) > 0 && l:lines[0] =~# '^// \[ChipCraft\] Student:'
+  if len(l:lines) > 0 && l:lines[0] =~# '^// \[Tarang2_dp1\] Student:'
     let l:lines = l:lines[1:]
   endif
 
@@ -134,10 +134,10 @@ function! s:Encrypt()
   let l:ok = v:shell_error == 0
 
   " If a persistent decrypted copy exists in build/ for this file (put
-  " there by chipcraft-decrypt-all.sh at startup), sync it now so that
+  " there by tarang2-dp1-decrypt-all.sh at startup), sync it now so that
   " compile.pl/regress.pl see the latest edit, not the stale startup copy.
   " Uses the watermarked plaintext (no visible header) — same format that
-  " chipcraft-decrypt-all.sh produces — so the build/ copy stays consistent.
+  " tarang2-dp1-decrypt-all.sh produces — so the build/ copy stays consistent.
   if l:ok
     let l:inner = fnamemodify(l:enc_path, ':r')
     if l:inner =~# '^' . escape(s:lab_root, '/\') . '/'
@@ -155,7 +155,7 @@ function! s:Encrypt()
   call delete(l:tmp_wm)
   if !l:ok
     call delete(l:tmp_enc)
-    echohl ErrorMsg | echom 'ChipCraft: encrypt failed — NOT SAVED' | echohl None
+    echohl ErrorMsg | echom 'Tarang2_dp1: encrypt failed — NOT SAVED' | echohl None
     return
   endif
 
@@ -173,7 +173,7 @@ endfunction
 " typo, not a deliberate bypass — none of the above applies: Vim's default
 " swapfile is created, and :w would write real plaintext straight to disk,
 " completely outside the encryption scheme. This mirrors the same allowlist
-" chipcraft-lab-files/.gitignore already enforces at the git layer (only
+" tarang2-dp1-lab-files/.gitignore already enforces at the git layer (only
 " Makefile/.gitignore/.gitattributes/README.md and *.enc are real plaintext),
 " but live in the editor instead of just at commit time.
 " build/ is exempt for reads — that is the tmpfs build-scratch area where
@@ -210,7 +210,7 @@ endfunction
 
 function! s:GuardedRead()
   let l:path = expand('%:p')
-  " .enc files are handled by the ChipCraftCrypt group above; anything
+  " .enc files are handled by the Tarang2_dp1Crypt group above; anything
   " outside WORK/BUILD entirely is none of this guard's business either.
   if l:path =~# '\.enc$' || (!s:UnderLab(l:path) && !s:UnderBuild(l:path))
     return
@@ -219,7 +219,7 @@ function! s:GuardedRead()
   call s:PassthroughRead()
   if !s:UnderBuild(l:path) && !s:IsAllowedPlain(l:path)
     echohl WarningMsg
-    echom 'ChipCraft: "' . fnamemodify(l:path, ':t') . '" is plaintext under projects — save as .enc instead.'
+    echom 'Tarang2_dp1: "' . fnamemodify(l:path, ':t') . '" is plaintext under projects — save as .enc instead.'
     echohl None
   endif
 endfunction
@@ -242,7 +242,7 @@ function! s:GuardedWrite()
     let l:enc_path = s:lab_root . '/' . l:rel . '.enc'
     let l:key = s:ReadKey()
     if empty(l:key)
-      echohl ErrorMsg | echom 'ChipCraft: no key — cannot encrypt to .enc' | echohl None
+      echohl ErrorMsg | echom 'Tarang2_dp1: no key — cannot encrypt to .enc' | echohl None
       return
     endif
     let l:tmp = tempname()
@@ -260,7 +260,7 @@ function! s:GuardedWrite()
     call delete(l:tmp_wm)
     if !l:ok
       call delete(l:tmp_enc)
-      echohl ErrorMsg | echom 'ChipCraft: encrypt failed — .enc not updated' | echohl None
+      echohl ErrorMsg | echom 'Tarang2_dp1: encrypt failed — .enc not updated' | echohl None
       return
     endif
     " Unlock enc destination before overwriting
@@ -271,16 +271,16 @@ function! s:GuardedWrite()
     " Build copy is left writable — direct editing in build/ is permitted
     call system('chmod u+w ' . shellescape(l:path) . ' 2>/dev/null || true')
     call s:PassthroughWrite()
-    echom 'ChipCraft: saved ' . fnamemodify(l:path, ':t') . ' and updated ' . fnamemodify(l:enc_path, ':t')
+    echom 'Tarang2_dp1: saved ' . fnamemodify(l:path, ':t') . ' and updated ' . fnamemodify(l:enc_path, ':t')
     return
   endif
   echohl ErrorMsg
-  echom 'ChipCraft: refusing to save plaintext "' . fnamemodify(l:path, ':t') . '" under projects.'
-  echom 'ChipCraft: save as "' . fnamemodify(l:path, ':t') . '.enc" instead — gvim will encrypt it automatically.'
+  echom 'Tarang2_dp1: refusing to save plaintext "' . fnamemodify(l:path, ':t') . '" under projects.'
+  echom 'Tarang2_dp1: save as "' . fnamemodify(l:path, ':t') . '.enc" instead — gvim will encrypt it automatically.'
   echohl None
 endfunction
 
-augroup ChipCraftCrypt
+augroup Tarang2_dp1Crypt
   autocmd!
   autocmd BufReadPre,BufNewFile *.enc call s:HardenBuffer()
   autocmd BufReadCmd  *.enc call s:Decrypt()
@@ -291,12 +291,12 @@ augroup END
 let s:lab_pattern   = s:lab_root   . '/**'
 let s:build_pattern = s:build_root . '/**'
 
-augroup ChipCraftPlainGuard
+augroup Tarang2_dp1PlainGuard
   autocmd!
 augroup END
-execute 'autocmd ChipCraftPlainGuard BufReadPre,BufNewFile ' . s:lab_pattern   . ' call s:HardenBuffer()'
-execute 'autocmd ChipCraftPlainGuard BufReadCmd  '           . s:lab_pattern   . ' call s:GuardedRead()'
-execute 'autocmd ChipCraftPlainGuard BufWriteCmd '           . s:lab_pattern   . ' call s:GuardedWrite()'
-execute 'autocmd ChipCraftPlainGuard BufReadPre,BufNewFile ' . s:build_pattern . ' call s:HardenBuffer()'
-execute 'autocmd ChipCraftPlainGuard BufReadCmd  '           . s:build_pattern . ' call s:GuardedRead()'
-execute 'autocmd ChipCraftPlainGuard BufWriteCmd '           . s:build_pattern . ' call s:GuardedWrite()'
+execute 'autocmd Tarang2_dp1PlainGuard BufReadPre,BufNewFile ' . s:lab_pattern   . ' call s:HardenBuffer()'
+execute 'autocmd Tarang2_dp1PlainGuard BufReadCmd  '           . s:lab_pattern   . ' call s:GuardedRead()'
+execute 'autocmd Tarang2_dp1PlainGuard BufWriteCmd '           . s:lab_pattern   . ' call s:GuardedWrite()'
+execute 'autocmd Tarang2_dp1PlainGuard BufReadPre,BufNewFile ' . s:build_pattern . ' call s:HardenBuffer()'
+execute 'autocmd Tarang2_dp1PlainGuard BufReadCmd  '           . s:build_pattern . ' call s:GuardedRead()'
+execute 'autocmd Tarang2_dp1PlainGuard BufWriteCmd '           . s:build_pattern . ' call s:GuardedWrite()'

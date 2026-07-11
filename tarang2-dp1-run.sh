@@ -1,5 +1,5 @@
 #!/bin/bash
-# ChipCraft Lab — encrypted Verilog runner
+# Tarang2_dp1 Lab — encrypted Verilog runner
 # Students use:  vrun yourfile.v.enc
 
 set -e
@@ -17,7 +17,7 @@ if [[ ! -f "$ENC_FILE" ]]; then
 fi
 
 if [[ -z "${CHIPCRAFT_KEY:-}" ]]; then
-    echo "ERROR: Not running inside ChipCraft Lab"
+    echo "ERROR: Not running inside Tarang2_dp1 Lab"
     exit 1
 fi
 
@@ -35,7 +35,7 @@ if ! openssl enc -d -aes-256-cbc -pbkdf2 \
     -k "$_K" \
     -in "$ENC_FILE" \
     -out "$TMPFILE" 2>/dev/null; then
-    echo "ERROR: Decryption failed — file may be corrupt or not a ChipCraft lab file"
+    echo "ERROR: Decryption failed — file may be corrupt or not a Tarang2_dp1 lab file"
     exit 1
 fi
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# ChipCraft Lab — Leak Detection Tool
+# Tarang2_dp1 Lab — Leak Detection Tool
 #
 # Identifies which student a leaked .v file came from by reading the
 # invisible trailing-space watermark embedded during decryption.
@@ -33,7 +33,7 @@ if [[ "$FILE" == *.enc ]]; then
         echo "ERROR: Set CHIPCRAFT_KEY env var to decrypt the file first." >&2
         exit 1
     fi
-    TMPF=$(mktemp /tmp/chipcraft_leak_XXXXX.v)
+    TMPF=$(mktemp /tmp/tarang2-dp1_leak_XXXXX.v)
     openssl enc -d -aes-256-cbc -pbkdf2 \
         -k "$KEY" -in "$FILE" -out "$TMPF" 2>/dev/null
     FILE="$TMPF"

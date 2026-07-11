@@ -1,6 +1,6 @@
 {
-  "name": "ChipCraft Lab — Digital Design & VLSI",
-  "image": "ghcr.io/rioncoreacademy/chipcraft:latest",
+  "name": "Tarang2_dp1 Lab — Digital Design & VLSI",
+  "image": "ghcr.io/rioncoreacademy/tarang2-dp1:latest",
   "forwardPorts": [6080],
   "portsAttributes": {
     "6080": {

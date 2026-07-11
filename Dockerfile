@@ -84,7 +84,7 @@ RUN apt-get update \
         libxext6 \
         libxext6:i386 \
         bzip2 \
-        # File-write watcher (needed by chipcraft-sweep.sh)
+        # File-write watcher (needed by tarang2-dp1-sweep.sh)
         inotify-tools \
         # Egress firewall (blocks students uploading decrypted files to internet)
         iptables \
@@ -106,7 +106,7 @@ RUN curl -fSL \
 # Using a wrapper script avoids sudoers comma-parsing issues with mount -o.
 RUN printf '%s\n' \
         "ubuntu ALL=(root) NOPASSWD: /sbin/iptables" \
-        "ubuntu ALL=(root) NOPASSWD: /usr/local/bin/chipcraft-mount-exec.sh" \
+        "ubuntu ALL=(root) NOPASSWD: /usr/local/bin/tarang2-dp1-mount-exec.sh" \
         > /etc/sudoers.d/lab-iptables \
     && chmod 440 /etc/sudoers.d/lab-iptables
 
@@ -147,42 +147,42 @@ RUN mkdir -p /workspaces/projects/.build.enc && chown -R ubuntu:ubuntu /workspac
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-COPY tools/chipcraft-mount-exec.sh  /usr/local/bin/chipcraft-mount-exec.sh
-COPY tools/chipcraft-key-init.sh    /usr/local/bin/chipcraft-key-init.sh
-COPY tools/chipcraft-tree.sh        /usr/local/bin/chipcraft-tree
-COPY tools/chipcraft-decrypt-all.sh /usr/local/bin/chipcraft-decrypt-all.sh
-COPY tools/chipcraft-sweep.sh     /usr/local/bin/chipcraft-sweep.sh
-COPY tools/chipcraft-refresh-github-ips.sh /usr/local/bin/chipcraft-refresh-github
-COPY tools/chipcraft-github-ssh-setup.sh /usr/local/bin/chipcraft-github-ssh-setup
+COPY tools/tarang2-dp1-mount-exec.sh  /usr/local/bin/tarang2-dp1-mount-exec.sh
+COPY tools/tarang2-dp1-key-init.sh    /usr/local/bin/tarang2-dp1-key-init.sh
+COPY tools/tarang2-dp1-tree.sh        /usr/local/bin/tarang2-dp1-tree
+COPY tools/tarang2-dp1-decrypt-all.sh /usr/local/bin/tarang2-dp1-decrypt-all.sh
+COPY tools/tarang2-dp1-sweep.sh     /usr/local/bin/tarang2-dp1-sweep.sh
+COPY tools/tarang2-dp1-refresh-github-ips.sh /usr/local/bin/tarang2-dp1-refresh-github
+COPY tools/tarang2-dp1-github-ssh-setup.sh /usr/local/bin/tarang2-dp1-github-ssh-setup
 COPY tools/watermark.py           /usr/local/bin/watermark.py
 COPY tools/git-wrapper.sh         /usr/local/bin/git
-COPY tools/chipcraft-vim-wrapper.sh /usr/local/bin/chipcraft-vim-wrapper.sh
-COPY tools/pre-commit             /usr/local/lib/chipcraft-hooks/pre-commit
-COPY tools/chipcraft-gitignore    /etc/chipcraft-gitignore
+COPY tools/tarang2-dp1-vim-wrapper.sh /usr/local/bin/tarang2-dp1-vim-wrapper.sh
+COPY tools/pre-commit             /usr/local/lib/tarang2-dp1-hooks/pre-commit
+COPY tools/tarang2-dp1-gitignore    /etc/tarang2-dp1-gitignore
 # System-wide gvim plugin: transparent in-memory decrypt/encrypt of *.enc
 # (any source type, not just Verilog). Loaded for every user automatically —
 # Debian/Ubuntu vim ships /usr/share/vim/vimfiles in 'runtimepath' by default.
-COPY tools/chipcraft-crypt.vim    /usr/share/vim/vimfiles/plugin/chipcraft-crypt.vim
-RUN chmod +x /usr/local/bin/chipcraft-mount-exec.sh \
-             /usr/local/bin/chipcraft-key-init.sh \
-             /usr/local/bin/chipcraft-tree \
-             /usr/local/bin/chipcraft-decrypt-all.sh \
-             /usr/local/bin/chipcraft-sweep.sh \
-             /usr/local/bin/chipcraft-refresh-github \
-             /usr/local/bin/chipcraft-github-ssh-setup \
+COPY tools/tarang2-dp1-crypt.vim    /usr/share/vim/vimfiles/plugin/tarang2-dp1-crypt.vim
+RUN chmod +x /usr/local/bin/tarang2-dp1-mount-exec.sh \
+             /usr/local/bin/tarang2-dp1-key-init.sh \
+             /usr/local/bin/tarang2-dp1-tree \
+             /usr/local/bin/tarang2-dp1-decrypt-all.sh \
+             /usr/local/bin/tarang2-dp1-sweep.sh \
+             /usr/local/bin/tarang2-dp1-refresh-github \
+             /usr/local/bin/tarang2-dp1-github-ssh-setup \
              /usr/local/bin/watermark.py \
              /usr/local/bin/git \
-             /usr/local/bin/chipcraft-vim-wrapper.sh \
-             /usr/local/lib/chipcraft-hooks/pre-commit \
+             /usr/local/bin/tarang2-dp1-vim-wrapper.sh \
+             /usr/local/lib/tarang2-dp1-hooks/pre-commit \
     # vi / vim / gvim all go through the wrapper — *.v args become *.v.enc
-    && ln -sf /usr/local/bin/chipcraft-vim-wrapper.sh /usr/local/bin/vi \
-    && ln -sf /usr/local/bin/chipcraft-vim-wrapper.sh /usr/local/bin/vim \
-    && ln -sf /usr/local/bin/chipcraft-vim-wrapper.sh /usr/local/bin/gvim \
+    && ln -sf /usr/local/bin/tarang2-dp1-vim-wrapper.sh /usr/local/bin/vi \
+    && ln -sf /usr/local/bin/tarang2-dp1-vim-wrapper.sh /usr/local/bin/vim \
+    && ln -sf /usr/local/bin/tarang2-dp1-vim-wrapper.sh /usr/local/bin/gvim \
     # System-level git config: *.v excluded and hooksPath locked — root-owned, not writable by ubuntu
     # Use /usr/bin/git directly — the wrapper at /usr/local/bin/git blocks hooksPath changes
-    && /usr/bin/git config --system core.excludesFile /etc/chipcraft-gitignore \
-    && /usr/bin/git config --system core.hooksPath    /usr/local/lib/chipcraft-hooks \
-    && chmod 444 /etc/gitconfig /etc/chipcraft-gitignore
+    && /usr/bin/git config --system core.excludesFile /etc/tarang2-dp1-gitignore \
+    && /usr/bin/git config --system core.hooksPath    /usr/local/lib/tarang2-dp1-hooks \
+    && chmod 444 /etc/gitconfig /etc/tarang2-dp1-gitignore
 
 COPY novnc-index.html /usr/share/novnc/index.html
 
@@ -199,11 +199,11 @@ COPY novnc-index.html /usr/share/novnc/index.html
 RUN sed -i "s/UI.initSetting('resize', 'off');/UI.initSetting('resize', 'remote');/" \
         /usr/share/novnc/app/ui.js
 
-# Rebrand the stock noVNC connect screen's "noVNC" logo to "ChipCraft".
+# Rebrand the stock noVNC connect screen's "noVNC" logo to "Tarang2_dp1".
 # See novnc-rebrand.js header for why this is a runtime text-replace instead
 # of patching vnc.html's markup directly (version-fragile).
-COPY novnc-rebrand.js /usr/share/novnc/chipcraft-rebrand.js
-RUN sed -i 's#</body>#<script src="chipcraft-rebrand.js"></script></body>#' \
+COPY novnc-rebrand.js /usr/share/novnc/tarang2-dp1-rebrand.js
+RUN sed -i 's#</body>#<script src="tarang2-dp1-rebrand.js"></script></body>#' \
         /usr/share/novnc/vnc.html
 
 # Hide the Clipboard button/panel in the noVNC sidebar. It's a client-side

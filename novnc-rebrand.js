@@ -1,4 +1,4 @@
-// ChipCraft Lab — rebrands the stock noVNC connect screen logo.
+// Tarang2_dp1 Lab — rebrands the stock noVNC connect screen logo.
 //
 // The "noVNC" logo text/title comes from the vendor vnc.html shipped by the
 // apt `novnc` package (not something in this repo), and its exact markup
@@ -20,10 +20,10 @@
       });
     });
     targets.forEach(function (el) {
-      el.textContent = 'ChipCraft';
+      el.textContent = 'Tarang2_dp1';
     });
     if (document.title.indexOf('noVNC') !== -1) {
-      document.title = document.title.replace(/noVNC/g, 'ChipCraft');
+      document.title = document.title.replace(/noVNC/g, 'Tarang2_dp1');
     }
   }
 
