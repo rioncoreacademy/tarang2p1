@@ -37,7 +37,7 @@ fi
 
 if [[ ! -d "$DEST" ]]; then
     echo "ERROR: Destination folder not found: $DEST"
-    echo "Run  : git clone https://github.com/narrave/chipcraft-lab-files.git $DEST"
+    echo "Run  : git clone https://github.com/rioncoreacademy/chipcraft-lab-files.git $DEST"
     exit 1
 fi
 

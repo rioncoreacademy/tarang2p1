@@ -17,7 +17,7 @@ if [[ -z "${BOOTSTRAP_TOKEN:-}" && ! -d "$WORK/.git" ]]; then
     # Clone into a temp dir then merge — cloning directly into $WORK fails
     # when the build tmpfs mount already exists there (git sees non-empty dir).
     TMPCLONE=$(mktemp -d)
-    if /usr/bin/git clone https://github.com/narrave/chipcraft-lab-files.git "$TMPCLONE" \
+    if /usr/bin/git clone https://github.com/rioncoreacademy/chipcraft-lab-files.git "$TMPCLONE" \
         >> /tmp/lab-crypto.log 2>&1; then
         mkdir -p "$WORK"
         shopt -s dotglob

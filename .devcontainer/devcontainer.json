@@ -1,6 +1,6 @@
 {
   "name": "ChipCraft Lab — Digital Design & VLSI",
-  "image": "ghcr.io/narrave/chipcraft:latest",
+  "image": "ghcr.io/rioncoreacademy/chipcraft:latest",
   "forwardPorts": [6080],
   "portsAttributes": {
     "6080": {

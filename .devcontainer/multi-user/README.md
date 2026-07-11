@@ -55,7 +55,7 @@ Go to repo → Settings → Secrets and variables → Codespaces → **New secre
 | `GH_CLIENT_SECRET` | OAuth App Client Secret |
 | `VNC_PASSWORD` | VNC password for student desktops (e.g. `novnc`) |
 | `CHIPCRAFT_KEY` | Encryption key for lab files (optional) |
-| `TEMPLATE_REPO` | GitHub repo to clone per student e.g. `narrave/lab-template` (optional) |
+| `TEMPLATE_REPO` | GitHub repo to clone per student e.g. `rioncoreacademy/lab-template` (optional) |
 
 > **Important:** Secret names must NOT start with `GITHUB_` — that prefix is reserved by GitHub. Use `GH_` prefix instead.
 

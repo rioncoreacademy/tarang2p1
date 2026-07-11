@@ -12,7 +12,7 @@ set -e
 # ── Config ────────────────────────────────────────────────────────────────────
 KEY="${CHIPCRAFT_KEY:-$(echo "MjAyNi1SQmFidS1WTFNJLUxhYi1LZXk=" | base64 -d)}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-FILES_REPO="https://github.com/narrave/chipcraft-lab-files.git"
+FILES_REPO="https://github.com/rioncoreacademy/chipcraft-lab-files.git"
 REPO_DIR="$(dirname "$SCRIPT_DIR")/chipcraft-lab-files"
 
 # ── Check argument ────────────────────────────────────────────────────────────

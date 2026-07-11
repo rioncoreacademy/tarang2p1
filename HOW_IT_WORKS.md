@@ -23,9 +23,9 @@ an environment variable in the container, so `docker inspect` reveals nothing us
 
 | Repo | URL | Purpose |
 |---|---|---|
-| `chipcraft-lab` | github.com/narrave/chipcraft-lab | Infrastructure — Dockerfile, API, entrypoint, tools |
-| `chipcraft-lab-files` | github.com/narrave/chipcraft-lab-files | Lab files — encrypted `.v.enc` files + Makefile |
-| `chipcraft-student` | github.com/narrave/chipcraft-student | VS Code Codespace launch only (devcontainer) |
+| `chipcraft-lab` | github.com/rioncoreacademy/chipcraft-lab | Infrastructure — Dockerfile, API, entrypoint, tools |
+| `chipcraft-lab-files` | github.com/rioncoreacademy/chipcraft-lab-files | Lab files — encrypted `.v.enc` files + Makefile |
+| `chipcraft-student` | github.com/rioncoreacademy/chipcraft-student | VS Code Codespace launch only (devcontainer) |
 
 > **`chipcraft-lab-files` is public** (files are encrypted so sharing them is safe).
 > The API forks it into each student account on login (Server Mode).
@@ -40,7 +40,7 @@ an environment variable in the container, so `docker inspect` reveals nothing us
 |  TEACHER'S PC                                                            |
 |                                                                          |
 |  counter.v  --encrypt-->  counter.v.enc  --push-->  chipcraft-lab-files |
-|  (private)    encrypt_lab.sh   (safe to share)      github.com/narrave   |
+|  (private)    encrypt_lab.sh   (safe to share)      github.com/rioncoreacademy   |
 +--------------------------------------------------------------------------+
                                                               |
                                               Cloned into ~/lab/ per student
@@ -556,7 +556,7 @@ chipcraft-github-ssh-setup "$YOUR_TOKEN" "test key"
 # 6. End-to-end: actually use the key for a git operation (revert the
 #    remote back to HTTPS afterward if you don't want it left changed)
 cd /workspaces/projects/.build.enc
-git remote set-url origin git@github.com:narrave/chipcraft-lab-files.git
+git remote set-url origin git@github.com:rioncoreacademy/chipcraft-lab-files.git
 git fetch origin
 
 # 7. Bad-token error path — should print a clean HTTP 401 + GitHub's error
@@ -662,7 +662,7 @@ so that automated cloning and pushing of encrypted files works correctly.
 
 ```
 1. Teacher gives you CLASS_TOKEN (e.g. vlsi2026)
-2. Open github.com/narrave/chipcraft-student
+2. Open github.com/rioncoreacademy/chipcraft-student
 3. Click Code -> Open in Codespace
 4. Wait ~2 minutes for the container to start
 5. The XFCE desktop opens automatically in your browser (port 6080)
@@ -692,7 +692,7 @@ postAttachCommand fires (runs AFTER Codespace secrets are injected):
 
 ```bash
 docker stop chipcraft-lab && docker rm chipcraft-lab
-docker pull ghcr.io/narrave/chipcraft:v1.0
+docker pull ghcr.io/rioncoreacademy/chipcraft:v1.0
 docker run -d \
   --name chipcraft-lab \
   --cap-add=NET_ADMIN \
@@ -700,7 +700,7 @@ docker run -d \
   -e CLASS_TOKEN=vlsi2026 \
   -e GITHUB_USER=your_github_name \
   --tmpfs /workspaces/projects/build:size=2g,uid=1000,gid=1000,mode=0700 \
-  ghcr.io/narrave/chipcraft:v1.0
+  ghcr.io/rioncoreacademy/chipcraft:v1.0
 # Open http://localhost:6080 in your browser
 ```
 
@@ -791,7 +791,7 @@ CHIPCRAFT_KEY=your-secret-key-here
 GH_CLIENT_ID=your_github_oauth_app_id
 GH_CLIENT_SECRET=your_github_oauth_secret
 VNC_PASSWORD=novnc
-TEMPLATE_REPO=narrave/chipcraft-lab-files
+TEMPLATE_REPO=rioncoreacademy/chipcraft-lab-files
 SESSION_TTL=14400
 PORT_START=6081
 PORT_END=6180
@@ -801,11 +801,11 @@ PORT_END=6180
 
 Every push to `master` that touches `Dockerfile`, `entrypoint.sh`,
 `tools/chipcraft-key-init.sh`, or `tools/chipcraft-crypt.vim` triggers **GitHub Actions -> Publish Docker Image**
-which builds and pushes `ghcr.io/narrave/chipcraft:latest` automatically.
+which builds and pushes `ghcr.io/rioncoreacademy/chipcraft:latest` automatically.
 
 ```bash
-docker pull ghcr.io/narrave/chipcraft:latest
-docker tag ghcr.io/narrave/chipcraft:latest ubuntu-novnc:latest
+docker pull ghcr.io/rioncoreacademy/chipcraft:latest
+docker tag ghcr.io/rioncoreacademy/chipcraft:latest ubuntu-novnc:latest
 cd NVR
 docker compose up -d
 ```
@@ -813,8 +813,8 @@ docker compose up -d
 To roll out a new image after a code push:
 
 ```bash
-docker pull ghcr.io/narrave/chipcraft:latest
-docker tag  ghcr.io/narrave/chipcraft:latest ubuntu-novnc:latest
+docker pull ghcr.io/rioncoreacademy/chipcraft:latest
+docker tag  ghcr.io/rioncoreacademy/chipcraft:latest ubuntu-novnc:latest
 # New student containers will use the updated image automatically.
 ```
 
@@ -851,10 +851,10 @@ cp counter.v.enc chipcraft-lab-files/
 cd chipcraft-lab-files && git add *.v.enc && git commit -m "lab1" && git push
 
 # 4. Make chipcraft-lab-files PUBLIC
-#    github.com/narrave/chipcraft-lab-files -> Settings -> Change visibility -> Public
+#    github.com/rioncoreacademy/chipcraft-lab-files -> Settings -> Change visibility -> Public
 
 # 5. Invite students to chipcraft-student as collaborators
-#    github.com/narrave/chipcraft-student -> Settings -> Collaborators
+#    github.com/rioncoreacademy/chipcraft-student -> Settings -> Collaborators
 ```
 
 ---

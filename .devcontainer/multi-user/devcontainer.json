@@ -19,7 +19,7 @@
     "GH_CLIENT_SECRET": {"description": "GitHub OAuth App Client Secret"},
     "CHIPCRAFT_KEY":        {"description": "Encryption key for lab files"},
     "VNC_PASSWORD":         {"description": "VNC password for student desktops (default: novnc)"},
-    "TEMPLATE_REPO":        {"description": "GitHub repo to fork per student e.g. narrave/lab-template (optional)"}
+    "TEMPLATE_REPO":        {"description": "GitHub repo to fork per student e.g. rioncoreacademy/lab-template (optional)"}
   },
   "postCreateCommand": "cd ${containerWorkspaceFolder} && bash .devcontainer/multi-user/init.sh",
   "postStartCommand": "pip install -q fastapi==0.115.0 uvicorn==0.30.6 httpx==0.27.2 docker==7.1.0 && cd ${containerWorkspaceFolder}/api && nohup uvicorn main:app --host 0.0.0.0 --port 80 > /tmp/api.log 2>&1 &",

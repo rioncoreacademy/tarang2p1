@@ -8,7 +8,7 @@ Each student gets their own isolated Codespace with a full XFCE4 desktop running
 Student opens repo → creates Codespace → XFCE4 desktop opens on port 6080
 ```
 
-- The devcontainer pulls `ghcr.io/narrave/chipcraft:latest` from GitHub Container Registry
+- The devcontainer pulls `ghcr.io/rioncoreacademy/chipcraft:latest` from GitHub Container Registry
 - `start.sh` launches TightVNC + websockify inside the container
 - Port 6080 is forwarded by Codespaces and opens automatically in the browser
 - No login required — password is `novnc`
@@ -22,7 +22,7 @@ Student opens repo → creates Codespace → XFCE4 desktop opens on port 6080
 
 ## Student Instructions
 
-1. Go to `https://github.com/narrave/chipcraft-lab`
+1. Go to `https://github.com/rioncoreacademy/chipcraft-lab`
 2. Click **Code → Codespaces → Create codespace on main**
 3. When prompted, select **"ChipCraft Lab — Digital Design & VLSI"**
 4. Wait ~2 minutes for the container to start
@@ -34,7 +34,7 @@ Student opens repo → creates Codespace → XFCE4 desktop opens on port 6080
 
 - Each student needs a **GitHub account**
 - The repo must be **public** (or students added as collaborators)
-- The GHCR image `ghcr.io/narrave/chipcraft` must be **public**
+- The GHCR image `ghcr.io/rioncoreacademy/chipcraft` must be **public**
 
 ## How to Make Repo & Image Public
 
@@ -60,7 +60,7 @@ Each Codespace runs independently so there is no limit on number of students —
 The image is built automatically by GitHub Actions when the `Dockerfile` changes:
 
 ```
-ghcr.io/narrave/chipcraft:latest
+ghcr.io/rioncoreacademy/chipcraft:latest
 ```
 
 Workflow: `.github/workflows/publish-image.yml`
