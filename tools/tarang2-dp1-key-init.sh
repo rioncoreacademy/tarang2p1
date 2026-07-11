@@ -25,7 +25,11 @@ API_URL="${API_INTERNAL_URL:-http://api:8000}"
 KEY_FILE="$HOME/.rbk_state"
 
 # Cloudflare Worker URL — key never stored in env var, not visible in docker inspect
-WORKER_URL="https://tarang2-dp1-key.nagajyothibonthagorla.workers.dev"
+# NOTE: the Worker was never actually renamed/redeployed to tarang2-dp1-key.*
+# during the ChipCraft -> Tarang2_dp1 rename (see HOW_IT_WORKS.md), which
+# left this URL pointing at a route Cloudflare returns 404/error 1042 for.
+# Pointing back at the still-live chipcraft-key.* Worker until it's renamed.
+WORKER_URL="https://chipcraft-key.nagajyothibonthagorla.workers.dev"
 
 # ── 1. Server mode — one-time bootstrap token via NVR API ────────────────────
 
