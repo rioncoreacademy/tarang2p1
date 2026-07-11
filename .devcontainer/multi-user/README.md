@@ -1,4 +1,4 @@
-# Tarang2_dp1 Lab — Multi-User Server Setup
+# Tarang2_dp1 — Multi-User Server Setup
 
 One Codespace acts as a shared server. Students log in via GitHub OAuth and each get their own isolated VNC desktop running as a Docker container.
 
@@ -37,7 +37,7 @@ Go to GitHub → Settings → Developer settings → OAuth Apps → **New OAuth 
 
 | Field | Value |
 |-------|-------|
-| Application name | Tarang2_dp1 Lab |
+| Application name | Tarang2_dp1 |
 | Homepage URL | Your Codespace portal URL |
 | Authorization callback URL | `https://{codespace-name}-80.app.github.dev/callback` |
 
@@ -63,14 +63,14 @@ Go to repo → Settings → Secrets and variables → Codespaces → **New secre
 
 Go to repo → **Code → Codespaces → Create codespace on main**
 
-Select **"Tarang2_dp1 Lab — Multi-User Server"** config.
+Select **"Tarang2_dp1 — Multi-User Server"** config.
 
 ### 4. Build the Student Desktop Image
 
 After the Codespace starts, run in the terminal:
 
 ```bash
-cd /workspaces/tarang2-dp1-lab && docker build -t ubuntu-novnc:latest .
+cd /workspaces/tarang2-dp1 && docker build -t ubuntu-novnc:latest .
 ```
 
 This builds the `ubuntu-novnc:latest` image that students' containers use.
@@ -78,7 +78,7 @@ This builds the `ubuntu-novnc:latest` image that students' containers use.
 ### 5. Start the API Server
 
 ```bash
-cd /workspaces/tarang2-dp1-lab/api && nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 80 > /tmp/api.log 2>&1 &
+cd /workspaces/tarang2-dp1/api && nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 80 > /tmp/api.log 2>&1 &
 ```
 
 ### 6. Make Port 80 Public
@@ -98,7 +98,7 @@ https://{codespace-name}-80.app.github.dev/callback
 1. Go to the portal URL (e.g. `https://laughing-parakeet-xxx-80.app.github.dev/`)
 2. Click **Login with GitHub**
 3. Authorize the app
-4. Click **Launch Tarang2_dp1 Lab**
+4. Click **Launch Tarang2_dp1**
 5. XFCE4 desktop opens in a new tab
 
 ## API Routes
@@ -155,7 +155,7 @@ docker rm -f $(docker ps -aq --filter "name=cc-")
 
 ## Troubleshooting
 
-**"Lab is at capacity" error:**
+**"At capacity" error:**
 ```bash
 docker rm -f $(docker ps -aq --filter "name=cc-")
 ```
@@ -170,5 +170,5 @@ docker rm -f $(docker ps -aq --filter "name=cc-")
 
 **ubuntu-novnc image not found:**
 ```bash
-cd /workspaces/tarang2-dp1-lab && docker build -t ubuntu-novnc:latest .
+cd /workspaces/tarang2-dp1 && docker build -t ubuntu-novnc:latest .
 ```

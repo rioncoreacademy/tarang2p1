@@ -1,4 +1,4 @@
-# Tarang2_dp1 Lab — Single-User Setup
+# Tarang2_dp1 — Single-User Setup
 
 Each student gets their own isolated Codespace with a full XFCE4 desktop running in the browser via noVNC.
 
@@ -22,9 +22,9 @@ Student opens repo → creates Codespace → XFCE4 desktop opens on port 6080
 
 ## Student Instructions
 
-1. Go to `https://github.com/rioncoreacademy/tarang2-dp1-lab`
+1. Go to `https://github.com/rioncoreacademy/tarang2-dp1`
 2. Click **Code → Codespaces → Create codespace on main**
-3. When prompted, select **"Tarang2_dp1 Lab — Digital Design & VLSI"**
+3. When prompted, select **"Tarang2_dp1 — Digital Design & VLSI"**
 4. Wait ~2 minutes for the container to start
 5. Port 6080 opens automatically → click **Connect**
 6. Enter password: `novnc`
@@ -107,7 +107,7 @@ curl -X POST \
   -H "Authorization: token GITHUB_PERSONAL_TOKEN" \
   -H "Content-Type: application/json" \
   https://api.github.com/user/keys \
-  -d "{\"title\":\"Tarang2_dp1 Lab\",\"key\":\"$(cat ~/.ssh/id_ed25519.pub)\"}"
+  -d "{\"title\":\"Tarang2_dp1\",\"key\":\"$(cat ~/.ssh/id_ed25519.pub)\"}"
 ```
 
 Get a token at: **github.com → Settings → Developer settings → Personal access tokens → New token** (scope: `write:public_key`)
@@ -116,7 +116,7 @@ Get a token at: **github.com → Settings → Developer settings → Personal ac
 
 **Desktop not loading:**
 ```bash
-export USER=ubuntu && bash /workspaces/tarang2-dp1-lab/.devcontainer/single-user/start.sh
+export USER=ubuntu && bash /workspaces/tarang2-dp1/.devcontainer/single-user/start.sh
 ```
 
 **Check if VNC is running:**

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tarang2_dp1 Lab — Leak Detection Tool
+# Tarang2_dp1 — Leak Detection Tool
 #
 # Identifies which student a leaked .v file came from by reading the
 # invisible trailing-space watermark embedded during decryption.

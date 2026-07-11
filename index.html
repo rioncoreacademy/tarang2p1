@@ -302,7 +302,7 @@
   <h1>Master Digital Design<br><span>& VLSI from Your Browser</span></h1>
   <p>Hands-on training in Verilog, VLSI and Embedded C — taught by R. Babu with a complete browser-based lab. No installation, any device, completely free.</p>
   <div class="hero-btns">
-    <a href="#start" class="btn-primary">🚀 Start Free Lab</a>
+    <a href="#start" class="btn-primary">🚀 Start Free</a>
     <a href="#services" class="btn-outline">View Training Courses</a>
   </div>
 </div>
@@ -315,7 +315,7 @@
       <div class="dot dot-r"></div>
       <div class="dot dot-y"></div>
       <div class="dot dot-g"></div>
-      <div class="demo-url">Tarang2_dp1 Lab — Browser Desktop</div>
+      <div class="demo-url">Tarang2_dp1 — Browser Desktop</div>
     </div>
     <div class="demo-screen">
       <div><span class="prompt">ubuntu@lab:~$</span> <span class="cmd">cat adder.v</span></div>
@@ -383,7 +383,7 @@
     </div>
     <div class="step">
       <div class="step-num">3</div>
-      <h3>Start the Lab</h3>
+      <h3>Launch It</h3>
       <p>A full Linux desktop opens in the browser. Write code, simulate, view waveforms — all from browser.</p>
     </div>
     <div class="step">
@@ -406,18 +406,18 @@
     </div>
     <div class="step">
       <div class="step-num">2</div>
-      <h3>Pull the Lab Image</h3>
+      <h3>Pull the Image</h3>
       <p>Open a terminal and run:<br><code style="color:var(--blue);font-size:12px;">docker pull ghcr.io/rioncoreacademy/tarang2-dp1:latest</code></p>
     </div>
     <div class="step">
       <div class="step-num">3</div>
-      <h3>Start the Lab</h3>
+      <h3>Launch It</h3>
       <p>Run with the command your instructor gives you (includes CLASS_TOKEN). Then open <strong>http://localhost:6080</strong> in your browser.</p>
     </div>
     <div class="step">
       <div class="step-num">4</div>
       <h3>Stop When Done</h3>
-      <p><code style="color:var(--blue);font-size:12px;">docker stop tarang2-dp1-lab</code><br>All your work is saved automatically via Git.</p>
+      <p><code style="color:var(--blue);font-size:12px;">docker stop tarang2-dp1</code><br>All your work is saved automatically via Git.</p>
     </div>
   </div>
 </section>
@@ -478,11 +478,11 @@
 
     <div class="service-card">
       <div class="service-icon">🎓</div>
-      <h3>College Lab Support</h3>
+      <h3>College Support</h3>
       <p>Designed for engineering colleges — replace expensive lab setups with browser-based labs. Students work from home, hostel or anywhere.</p>
       <span class="service-tag">Colleges</span>
       <span class="service-tag">B.Tech</span>
-      <span class="service-tag">Lab Replacement</span>
+      <span class="service-tag">Setup Replacement</span>
     </div>
 
   </div>
@@ -649,7 +649,7 @@
     <div style="color:var(--muted); margin-bottom:4px;"># Step 1 — install Docker Desktop, then:</div>
     <div style="color:var(--blue);">docker pull ghcr.io/rioncoreacademy/tarang2-dp1:latest</div>
     <div style="color:var(--muted); margin-top:8px; margin-bottom:4px;"># Step 2 — run (use the CLASS_TOKEN your instructor gives you):</div>
-    <div style="color:var(--blue);">docker run -d --name tarang2-dp1-lab -p 6080:6080 \</div>
+    <div style="color:var(--blue);">docker run -d --name tarang2-dp1 -p 6080:6080 \</div>
     <div style="color:var(--blue);">&nbsp;&nbsp;-e CLASS_TOKEN=vlsi2026 -e GITHUB_USER=yourname \</div>
     <div style="color:var(--blue);">&nbsp;&nbsp;--tmpfs /home/ubuntu/lab/build:size=2g,uid=1000,gid=1000,mode=0700 \</div>
     <div style="color:var(--blue);">&nbsp;&nbsp;ghcr.io/rioncoreacademy/tarang2-dp1:latest</div>

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Tarang2_dp1 Lab — Invisible watermark via trailing-space steganography.
+Tarang2_dp1 — Invisible watermark via trailing-space steganography.
 
 Encodes a student identifier as binary bits into trailing spaces on each line.
 The watermark is invisible to readers and survives copy-paste, editor saves,

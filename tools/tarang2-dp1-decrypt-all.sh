@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tarang2_dp1 Lab — decrypt every *.enc under ~/lab into ~/lab/build once at
+# Tarang2_dp1 — decrypt every *.enc under ~/lab into ~/lab/build once at
 # container startup, preserving directory structure, and leave it there for
 # the whole session. No shred, no session boundary.
 #

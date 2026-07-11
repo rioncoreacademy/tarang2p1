@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tarang2_dp1 Lab — generate an SSH key (if needed) and upload the public half
+# Tarang2_dp1 — generate an SSH key (if needed) and upload the public half
 # to the student's own GitHub account via the API.
 #
 # Needed because the noVNC clipboard is blocked (-noclipboard on Xvnc), so
@@ -14,7 +14,7 @@
 set -euo pipefail
 
 TOKEN="${1:-}"
-TITLE="${2:-Tarang2_dp1 Lab ($(hostname))}"
+TITLE="${2:-Tarang2_dp1 ($(hostname))}"
 KEY_PATH="$HOME/.ssh/id_ed25519"
 
 if [ -z "$TOKEN" ]; then
@@ -31,7 +31,7 @@ chmod 700 "$HOME/.ssh"
 
 if [ ! -f "$KEY_PATH" ]; then
     echo "[github-ssh-setup] No SSH key found at $KEY_PATH — generating a new ed25519 key..."
-    ssh-keygen -t ed25519 -N "" -f "$KEY_PATH" -C "${GITHUB_USER:-tarang2-dp1-student}@tarang2-dp1-lab" -q
+    ssh-keygen -t ed25519 -N "" -f "$KEY_PATH" -C "${GITHUB_USER:-tarang2-dp1-user}@tarang2-dp1" -q
 else
     echo "[github-ssh-setup] Using existing key at $KEY_PATH"
 fi

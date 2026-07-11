@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tarang2_dp1 Lab — Encrypt & Push to GitHub
+# Tarang2_dp1 — Encrypt & Push to GitHub
 #
 # Usage:
 #   bash push_labs.sh <source-folder>
@@ -12,8 +12,8 @@ set -e
 # ── Config ────────────────────────────────────────────────────────────────────
 KEY="${CHIPCRAFT_KEY:-$(echo "MjAyNi1SQmFidS1WTFNJLUxhYi1LZXk=" | base64 -d)}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-FILES_REPO="https://github.com/rioncoreacademy/tarang2-dp1-lab-files.git"
-REPO_DIR="$(dirname "$SCRIPT_DIR")/tarang2-dp1-lab-files"
+FILES_REPO="https://github.com/rioncoreacademy/tarang2-dp1-files.git"
+REPO_DIR="$(dirname "$SCRIPT_DIR")/tarang2-dp1-files"
 
 # ── Check argument ────────────────────────────────────────────────────────────
 if [[ -z "${1:-}" ]]; then
@@ -35,7 +35,7 @@ fi
 
 echo ""
 echo "========================================"
-echo "  Tarang2_dp1 Lab — Encrypt & Push"
+echo "  Tarang2_dp1 — Encrypt & Push"
 echo "========================================"
 echo ""
 echo "  Source : $SOURCE"
@@ -88,6 +88,6 @@ echo ""
 echo "========================================"
 echo "  Done! Files are live on GitHub."
 echo "  Students will get them on next launch"
-echo "  or by running refresh-lab.sh"
+echo "  or by running refresh-files.sh"
 echo "========================================"
 echo ""

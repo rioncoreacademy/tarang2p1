@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tarang2_dp1 Lab — How It Works</title>
+<title>Tarang2_dp1 — How It Works</title>
 <style>
   :root {
     --bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#e6edf3;
@@ -63,7 +63,7 @@
 </head>
 <body>
 <header>
-  <div class="chip-logo">&#9675; Tarang2_dp1 Lab Platform</div>
+  <div class="chip-logo">&#9675; Tarang2_dp1 Platform</div>
   <h1>How <span>Tarang2_dp1</span> Works</h1>
   <p>Encrypted Verilog labs delivered securely to students via browser-based Linux desktops</p>
 </header>
@@ -89,12 +89,12 @@
   <div class="table-wrap"><table>
     <thead><tr><th>Repo</th><th>URL</th><th>Purpose</th></tr></thead>
     <tbody>
-      <tr><td><code>tarang2-dp1-lab</code></td><td>github.com/rioncoreacademy/tarang2-dp1-lab</td><td>Infrastructure &mdash; Dockerfile, API, entrypoint, tools</td></tr>
-      <tr><td><code>tarang2-dp1-lab-files</code></td><td>github.com/rioncoreacademy/tarang2-dp1-lab-files</td><td>Lab files &mdash; encrypted <code>.v.enc</code> files + Makefile</td></tr>
-      <tr><td><code>tarang2-dp1-student</code></td><td>github.com/rioncoreacademy/tarang2-dp1-student</td><td>VS Code Codespace launch only (devcontainer)</td></tr>
+      <tr><td><code>tarang2-dp1</code></td><td>github.com/rioncoreacademy/tarang2-dp1</td><td>Infrastructure &mdash; Dockerfile, API, entrypoint, tools</td></tr>
+      <tr><td><code>tarang2-dp1-files</code></td><td>github.com/rioncoreacademy/tarang2-dp1-files</td><td>Encrypted <code>.v.enc</code> files + Makefile</td></tr>
+      <tr><td><code>tarang2-dp1-user</code></td><td>github.com/rioncoreacademy/tarang2-dp1-user</td><td>VS Code Codespace launch only (devcontainer)</td></tr>
     </tbody>
   </table></div>
-  <blockquote><strong>tarang2-dp1-lab-files is public</strong> &mdash; files are encrypted so sharing is safe. The API forks it per student on login (Server Mode). In Codespace/Docker Mode, students clone it directly.</blockquote>
+  <blockquote><strong>tarang2-dp1-files is public</strong> &mdash; files are encrypted so sharing is safe. The API forks it per student on login (Server Mode). In Codespace/Docker Mode, students clone it directly.</blockquote>
 </section>
 
 <section id="deployment">
@@ -150,7 +150,7 @@ bash NVR/tools/encrypt_lab.sh labs/        # -> encrypts all .v files in folder<
 !*.v.enc     &larr; allowed  (encrypted &mdash; safe to share)
 !mywork/     &larr; allowed  (student-created files folder)
 !mywork/*.v  &larr; allowed  (student .v files in mywork/)</code></pre>
-<pre><code>cd tarang2-dp1-lab-files
+<pre><code>cd tarang2-dp1-files
 cp ../labs/*.v.enc .
 git add *.v.enc &amp;&amp; git commit -m "lab1" &amp;&amp; git push</code></pre>
 </section>
@@ -258,14 +258,14 @@ git push &lt;attacker&gt;   # sends plaintext to their personal repo</code></pre
   <h3>Codespace Mode</h3>
   <ol style="color:#cdd9e5;margin-bottom:16px">
     <li>Teacher gives you <code>CLASS_TOKEN</code> (e.g. <code>vlsi2026</code>)</li>
-    <li>Open <strong>github.com/rioncoreacademy/tarang2-dp1-student</strong> &rarr; Code &rarr; Open in Codespace</li>
+    <li>Open <strong>github.com/rioncoreacademy/tarang2-dp1-user</strong> &rarr; Code &rarr; Open in Codespace</li>
     <li>Wait ~2 minutes for the container to start</li>
     <li>XFCE desktop opens automatically in your browser (port 6080)</li>
     <li>Open terminal &rarr; <code>cd ~/labs &amp;&amp; make</code></li>
   </ol>
   <p>When you attach, <code>setup.sh</code> runs automatically:</p>
 <pre><code>postAttachCommand fires (after Codespace secrets are injected):
-  &rarr; git clone tarang2-dp1-lab-files &rarr; ~/lab/
+  &rarr; git clone tarang2-dp1-files &rarr; ~/lab/
   &rarr; Sends CLASS_TOKEN to Cloudflare Worker &rarr; gets CHIPCRAFT_KEY
   &rarr; Restarts decrypt_watch.sh with key exported to subprocess
   &rarr; ~/labs/ fills with decrypted .v files</code></pre>
@@ -311,7 +311,7 @@ CHIPCRAFT_KEY=your-secret-key-here
 GH_CLIENT_ID=your_github_oauth_app_id
 GH_CLIENT_SECRET=your_github_oauth_secret
 VNC_PASSWORD=novnc
-TEMPLATE_REPO=rioncoreacademy/tarang2-dp1-lab-files
+TEMPLATE_REPO=rioncoreacademy/tarang2-dp1-files
 SESSION_TTL=14400
 PORT_START=6081
 PORT_END=6180</code></pre>
@@ -323,21 +323,21 @@ cd NVR &amp;&amp; docker compose up -d</code></pre>
   <h3>3. Encrypt and push lab files</h3>
 <pre><code>export CHIPCRAFT_KEY="your-secret-key-here"
 bash NVR/tools/encrypt_lab.sh counter.v
-cd tarang2-dp1-lab-files
+cd tarang2-dp1-files
 cp ../counter.v.enc . &amp;&amp; git add *.v.enc &amp;&amp; git commit -m "lab1" &amp;&amp; git push</code></pre>
   <h3>Codespace Setup (Teacher)</h3>
 <pre><code># 1. Deploy Cloudflare Worker with CLASS_TOKEN and CHIPCRAFT_KEY secrets
 
 # 2. Codespace secret (CLASS_TOKEN only, NOT CHIPCRAFT_KEY)
 #    github.com/settings/codespaces &rarr; New secret
-#    Name: CLASS_TOKEN  Value: vlsi2026  Repo: tarang2-dp1-student
+#    Name: CLASS_TOKEN  Value: vlsi2026  Repo: tarang2-dp1-user
 
 # 3. Encrypt and push lab files (same as above)
 
-# 4. Make tarang2-dp1-lab-files PUBLIC
-#    github.com/rioncoreacademy/tarang2-dp1-lab-files &rarr; Settings &rarr; Change visibility
+# 4. Make tarang2-dp1-files PUBLIC
+#    github.com/rioncoreacademy/tarang2-dp1-files &rarr; Settings &rarr; Change visibility
 
-# 5. Invite students to tarang2-dp1-student as collaborators</code></pre>
+# 5. Invite students to tarang2-dp1-user as collaborators</code></pre>
 </section>
 
 <section id="layout">
@@ -448,6 +448,6 @@ Internal tools use /usr/bin/git directly &mdash; unaffected</code></pre>
 </section>
 
 </div>
-<footer>Tarang2_dp1 Lab &mdash; VLSI Education Platform &nbsp;|&nbsp; github.com/rioncoreacademy/tarang2-dp1-lab</footer>
+<footer>Tarang2_dp1 &mdash; VLSI Education Platform &nbsp;|&nbsp; github.com/rioncoreacademy/tarang2-dp1</footer>
 </body>
 </html>

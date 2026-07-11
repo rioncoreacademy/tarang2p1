@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tarang2_dp1 Lab — sweep watcher for WORK (.build.enc) and BUILD (build).
+# Tarang2_dp1 — sweep watcher for WORK (.build.enc) and BUILD (build).
 #
 # WORK (.build.enc):
 #   - Plaintext .v files  → encrypt to .enc in WORK, copy .v to BUILD (writable), shred tmp

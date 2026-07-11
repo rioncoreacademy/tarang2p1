@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tarang2_dp1 Lab — refresh the egress firewall's GitHub IP allowlist on demand.
+# Tarang2_dp1 — refresh the egress firewall's GitHub IP allowlist on demand.
 #
 # entrypoint.sh already does this automatically once at container startup,
 # but GitHub's published IP ranges (api.github.com/meta) add/rotate

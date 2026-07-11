@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tarang2_dp1 Lab — decrypt/shred an entire subtree for multi-file build flows.
+# Tarang2_dp1 — decrypt/shred an entire subtree for multi-file build flows.
 #
 # gvim (tarang2-dp1-crypt.vim) handles single-file editing in memory; the
 # top-level Makefile handles single-file iverilog compiles. Neither covers a

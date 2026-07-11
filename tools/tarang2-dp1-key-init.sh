@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tarang2_dp1 Lab — fetch the decryption key once, write it for gvim to use.
+# Tarang2_dp1 — fetch the decryption key once, write it for gvim to use.
 #
 # Replaces the old decrypt_watch.sh model (decrypt every *.v.enc into a
 # tmpfs directory and watch it for saves). Decryption now happens entirely

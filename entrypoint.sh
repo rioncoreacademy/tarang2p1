@@ -13,11 +13,11 @@ export BUILD="${BUILD:-/workspaces/projects/build}"
 # Server Mode skips this: BOOTSTRAP_TOKEN means the API will clone the
 # student's own fork shortly after startup (see api/main.py _clone_repo()).
 if [[ -z "${BOOTSTRAP_TOKEN:-}" && ! -d "$WORK/.git" ]]; then
-    echo "[projects] Cloning tarang2-dp1-lab-files -> $WORK …" >> /tmp/lab-crypto.log
+    echo "[projects] Cloning tarang2-dp1-files -> $WORK …" >> /tmp/lab-crypto.log
     # Clone into a temp dir then merge — cloning directly into $WORK fails
     # when the build tmpfs mount already exists there (git sees non-empty dir).
     TMPCLONE=$(mktemp -d)
-    if /usr/bin/git clone https://github.com/rioncoreacademy/tarang2-dp1-lab-files.git "$TMPCLONE" \
+    if /usr/bin/git clone https://github.com/rioncoreacademy/tarang2-dp1-files.git "$TMPCLONE" \
         >> /tmp/lab-crypto.log 2>&1; then
         mkdir -p "$WORK"
         shopt -s dotglob
@@ -28,7 +28,7 @@ if [[ -z "${BOOTSTRAP_TOKEN:-}" && ! -d "$WORK/.git" ]]; then
         # Lock all cloned files read-only — dirs stay writable for gvim/sweep to add .enc files
         find "$WORK" -type f -exec chmod a-w {} \; 2>/dev/null || true
     else
-        echo "[projects] WARNING: could not clone tarang2-dp1-lab-files." >> /tmp/lab-crypto.log
+        echo "[projects] WARNING: could not clone tarang2-dp1-files." >> /tmp/lab-crypto.log
         rm -rf "$TMPCLONE"
     fi
 fi
@@ -174,7 +174,7 @@ done
 # Start websockify in background
 nohup $WS --web=/usr/share/novnc/ "$NOVNC_PORT" localhost:"$VNC_PORT" >> /tmp/novnc.log 2>&1 &
 
-echo "Lab desktop ready on port $NOVNC_PORT"
+echo "Desktop ready on port $NOVNC_PORT"
 
 # Fetch key once and write it to ~/.rbk_state (mode 600). Decryption itself
 # happens inside gvim, in memory, when a student opens any *.enc file — no

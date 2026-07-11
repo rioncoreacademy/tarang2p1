@@ -1,4 +1,4 @@
-" Tarang2_dp1 Lab — transparent in-memory decrypt/encrypt for *.enc source files
+" Tarang2_dp1 — transparent in-memory decrypt/encrypt for *.enc source files
 "
 " Plaintext is never written to any file. Reading a *.enc file decrypts it
 " straight into the Vim buffer via an openssl pipe; saving pipes the buffer
@@ -173,7 +173,7 @@ endfunction
 " typo, not a deliberate bypass — none of the above applies: Vim's default
 " swapfile is created, and :w would write real plaintext straight to disk,
 " completely outside the encryption scheme. This mirrors the same allowlist
-" tarang2-dp1-lab-files/.gitignore already enforces at the git layer (only
+" tarang2-dp1-files/.gitignore already enforces at the git layer (only
 " Makefile/.gitignore/.gitattributes/README.md and *.enc are real plaintext),
 " but live in the editor instead of just at commit time.
 " build/ is exempt for reads — that is the tmpfs build-scratch area where

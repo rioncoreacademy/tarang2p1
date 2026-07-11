@@ -235,7 +235,7 @@ def _portal_page(github_user: str) -> str:
       <span class="tag">gvim</span>
       <span class="tag">XFCE4 Desktop</span>
     </div>
-    <a href="/launch" class="btn">&#128640; Launch Tarang2_dp1 Lab</a>
+    <a href="/launch" class="btn">&#128640; Launch Tarang2_dp1</a>
     <a href="/logout" class="btn btn-out">Logout</a>
   </div>
 </body>
@@ -259,7 +259,7 @@ def _busy_page() -> str:
 </head>
 <body>
   <div class="card">
-    <h1>Lab is at capacity</h1>
+    <h1>At capacity</h1>
     <p>All lab slots are in use. Please wait a few minutes and try again.</p>
     <a href="/">&#8592; Back to portal</a>
   </div>

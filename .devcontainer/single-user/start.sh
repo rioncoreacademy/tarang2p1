@@ -43,4 +43,4 @@ done
 nohup $WS --web=/usr/share/novnc/ 6080 localhost:5901 >> /tmp/novnc.log 2>&1 &
 disown
 
-echo "Lab desktop ready — open port 6080 in the Ports tab"
+echo "Desktop ready — open port 6080 in the Ports tab"

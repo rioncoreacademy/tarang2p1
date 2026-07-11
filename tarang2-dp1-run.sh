@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tarang2_dp1 Lab — encrypted Verilog runner
+# Tarang2_dp1 — encrypted Verilog runner
 # Students use:  vrun yourfile.v.enc
 
 set -e
@@ -17,7 +17,7 @@ if [[ ! -f "$ENC_FILE" ]]; then
 fi
 
 if [[ -z "${CHIPCRAFT_KEY:-}" ]]; then
-    echo "ERROR: Not running inside Tarang2_dp1 Lab"
+    echo "ERROR: Not running inside Tarang2_dp1"
     exit 1
 fi
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tarang2_dp1 Lab — vi / vim / gvim wrapper
+# Tarang2_dp1 — vi / vim / gvim wrapper
 #
 # Redirects any *.v file argument to *.v.enc so users can never open or
 # create a raw plaintext .v file under WORK. The tarang2-dp1-crypt.vim plugin
