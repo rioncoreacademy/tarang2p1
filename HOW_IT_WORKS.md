@@ -255,8 +255,10 @@ Student container has CLASS_TOKEN in its environment:
   (visible in docker inspect, but harmless — it is just a door pass)
 
 When tarang2-dp1-key-init.sh needs the key:
-  POST https://tarang2-dp1-key.nagajyothibonthagorla.workers.dev
+  POST https://chipcraft-key.nagajyothibonthagorla.workers.dev
   Body: { "class_token": "vlsi2026", "user": "student_github_name" }
+  (Worker still lives under its pre-rename ChipCraft name — was never
+  renamed/redeployed to tarang2-dp1-key.* on Cloudflare.)
 
 Worker checks CLASS_TOKEN:
   Match    -> returns { "key": "your-key" }
