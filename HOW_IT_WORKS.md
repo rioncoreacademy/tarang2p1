@@ -124,7 +124,7 @@ Three ways to run Tarang2_dp1. Choose based on your needs:
 ## License Gate
 
 Optional, opt-in layer separate from the Verilog-encryption system above:
-gates the image itself, and the lab folder specifically, behind a license
+gates the image itself, and the project folder specifically, behind a license
 key issued by a separate license API (see the `docker-license-test`
 project — `/activate` + `/validate`, fingerprint-locked to one machine via
 `max_activations=1`). Inactive unless `LICENSE_API_BASE_URL` is set for a
@@ -138,7 +138,7 @@ Checked once at container startup, in `entrypoint.sh`, before anything else:
 - **Tier 2 — `LICENSE_KEY` present but invalid for this machine** (wrong or
   shared `LICENSE_FINGERPRINT`, expired, revoked, or the license's single
   seat is already used by a different machine): the desktop still boots —
-  so the person can see *why* — but `$WORK` (the lab folder) is left empty
+  so the person can see *why* — but `$WORK` (the project folder) is left empty
   except for a `LICENSE_LOCKED.txt` explaining the problem, and the
   `CHIPCRAFT_KEY` fetch / decrypt-into-`$BUILD` steps never run either.
 

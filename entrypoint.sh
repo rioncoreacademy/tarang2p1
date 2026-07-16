@@ -20,8 +20,8 @@ fi
 
 # Tier 2: key present but invalid for THIS machine (wrong/shared
 # fingerprint, expired, revoked, seat already used elsewhere) -> the
-# desktop still boots so the person can see why, but the lab folder itself
-# stays locked instead of being populated.
+# desktop still boots so the person can see why, but the project folder
+# itself stays locked instead of being populated.
 LICENSE_OK=1
 if [[ -n "${LICENSE_API_BASE_URL:-}" ]]; then
     if [[ -z "${LICENSE_FINGERPRINT:-}" ]]; then
@@ -42,12 +42,12 @@ export LICENSE_OK
 if [[ "$LICENSE_OK" != "1" ]]; then
     mkdir -p "$WORK"
     cat > "$WORK/LICENSE_LOCKED.txt" <<'EOF'
-This lab folder is locked: no valid license was found for this machine.
+This project folder is locked: no valid license was found for this machine.
 This license key may already be activated on a different computer — each
 key only works on one machine. Contact your instructor/license holder.
 EOF
     chmod 555 "$WORK"
-    echo "[license] Lab folder locked — no valid license for this machine." >> /tmp/lab-crypto.log
+    echo "[license] Project folder locked — no valid license for this machine." >> /tmp/lab-crypto.log
 elif [[ -z "${BOOTSTRAP_TOKEN:-}" && ! -d "$WORK/.git" ]]; then
     echo "[projects] Cloning tarang2p1-files -> $WORK …" >> /tmp/lab-crypto.log
     # Clone into a temp dir then merge — cloning directly into $WORK fails

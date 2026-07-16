@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 License-check client for the Tarang2_dp1 image. Called from entrypoint.sh
-before the lab folder ($WORK) is populated -- see the "License gate" block
+before the project folder ($WORK) is populated -- see the "License gate" block
 there. Talks to the same license-api that docker-license-test/client/
 license_check.py talks to (identical request/response shape).
 
