@@ -26,7 +26,7 @@ KEYFILE="$HOME/.rbk_state"
 SCRATCH="$BUILD/.sweep-tmp"
 ALLOWLIST=("Makefile" ".gitignore" ".gitattributes" "README.md")
 
-# Same source-file scope tarang2-dp1-crypt.vim documents handling (Verilog,
+# Same source-file scope tarang2p1-crypt.vim documents handling (Verilog,
 # SystemVerilog, C, Perl, assembly, headers, sim scripts) — used to decide
 # whether a brand-new file with no matching .enc yet should be auto-encrypted.
 # Deliberately excludes build output (*.vvp, *.vcd, obj_dir/*.cpp, …), which

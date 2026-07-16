@@ -3,9 +3,9 @@
 #
 # Replaces the old decrypt_watch.sh model (decrypt every *.v.enc into a
 # tmpfs directory and watch it for saves). Decryption now happens entirely
-# inside gvim (see tarang2-dp1-crypt.vim) — no plaintext .v file is ever
+# inside gvim (see tarang2p1-crypt.vim) — no plaintext .v file is ever
 # written to disk. This script's only job is getting the key into
-# ~/.tarang2-dp1_key (mode 600) so the gvim plugin can read it.
+# ~/.tarang2p1_key (mode 600) so the gvim plugin can read it.
 #
 # A file instead of an env var because gvim runs as the same user as the
 # student's shell, so the key can never be perfectly hidden from that user
@@ -25,7 +25,7 @@ API_URL="${API_INTERNAL_URL:-http://api:8000}"
 KEY_FILE="$HOME/.rbk_state"
 
 # Cloudflare Worker URL — key never stored in env var, not visible in docker inspect
-# NOTE: the Worker was never actually renamed/redeployed to tarang2-dp1-key.*
+# NOTE: the Worker was never actually renamed/redeployed to tarang2p1-key.*
 # during the ChipCraft -> Tarang2_dp1 rename (see HOW_IT_WORKS.md), which
 # left this URL pointing at a route Cloudflare returns 404/error 1042 for.
 # Pointing back at the still-live chipcraft-key.* Worker until it's renamed.

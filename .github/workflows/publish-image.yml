@@ -8,17 +8,17 @@ on:
       - .github/workflows/publish-image.yml
       - Dockerfile
       - entrypoint.sh
-      - tarang2-dp1-run.sh
+      - tarang2p1-run.sh
       - novnc-index.html
-      - tools/tarang2-dp1-key-init.sh
-      - tools/tarang2-dp1-tree.sh
-      - tools/tarang2-dp1-decrypt-all.sh
-      - tools/tarang2-dp1-sweep.sh
-      - tools/tarang2-dp1-crypt.vim
-      - tools/tarang2-dp1-vim-wrapper.sh
-      - tools/tarang2-dp1-refresh-github-ips.sh
-      - tools/tarang2-dp1-github-ssh-setup.sh
-      - tools/tarang2-dp1-license-check.py
+      - tools/tarang2p1-key-init.sh
+      - tools/tarang2p1-tree.sh
+      - tools/tarang2p1-decrypt-all.sh
+      - tools/tarang2p1-sweep.sh
+      - tools/tarang2p1-crypt.vim
+      - tools/tarang2p1-vim-wrapper.sh
+      - tools/tarang2p1-refresh-github-ips.sh
+      - tools/tarang2p1-github-ssh-setup.sh
+      - tools/tarang2p1-license-check.py
       - novnc-rebrand.js
 
 jobs:
@@ -49,7 +49,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/tarang2-dp1
+          images: ghcr.io/${{ github.repository_owner }}/tarang2p1
           tags: |
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}

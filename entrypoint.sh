@@ -26,9 +26,9 @@ LICENSE_OK=1
 if [[ -n "${LICENSE_API_BASE_URL:-}" ]]; then
     if [[ -z "${LICENSE_FINGERPRINT:-}" ]]; then
         LICENSE_OK=0
-    elif ! python3 /usr/local/bin/tarang2-dp1-license-check.py activate "$LICENSE_KEY" "$LICENSE_FINGERPRINT" \
+    elif ! python3 /usr/local/bin/tarang2p1-license-check.py activate "$LICENSE_KEY" "$LICENSE_FINGERPRINT" \
             >> /tmp/lab-crypto.log 2>&1 \
-      || ! python3 /usr/local/bin/tarang2-dp1-license-check.py validate "$LICENSE_KEY" "$LICENSE_FINGERPRINT" \
+      || ! python3 /usr/local/bin/tarang2p1-license-check.py validate "$LICENSE_KEY" "$LICENSE_FINGERPRINT" \
             >> /tmp/lab-crypto.log 2>&1; then
         LICENSE_OK=0
     fi
@@ -49,11 +49,11 @@ EOF
     chmod 555 "$WORK"
     echo "[license] Lab folder locked — no valid license for this machine." >> /tmp/lab-crypto.log
 elif [[ -z "${BOOTSTRAP_TOKEN:-}" && ! -d "$WORK/.git" ]]; then
-    echo "[projects] Cloning tarang2-dp1-files -> $WORK …" >> /tmp/lab-crypto.log
+    echo "[projects] Cloning tarang2p1-files -> $WORK …" >> /tmp/lab-crypto.log
     # Clone into a temp dir then merge — cloning directly into $WORK fails
     # when the build tmpfs mount already exists there (git sees non-empty dir).
     TMPCLONE=$(mktemp -d)
-    if /usr/bin/git clone https://github.com/rioncoreacademy/tarang2-dp1-files.git "$TMPCLONE" \
+    if /usr/bin/git clone https://github.com/rioncoreacademy/tarang2p1-files.git "$TMPCLONE" \
         >> /tmp/lab-crypto.log 2>&1; then
         mkdir -p "$WORK"
         shopt -s dotglob
@@ -64,7 +64,7 @@ elif [[ -z "${BOOTSTRAP_TOKEN:-}" && ! -d "$WORK/.git" ]]; then
         # Lock all cloned files read-only — dirs stay writable for gvim/sweep to add .enc files
         find "$WORK" -type f -exec chmod a-w {} \; 2>/dev/null || true
     else
-        echo "[projects] WARNING: could not clone tarang2-dp1-files." >> /tmp/lab-crypto.log
+        echo "[projects] WARNING: could not clone tarang2p1-files." >> /tmp/lab-crypto.log
         rm -rf "$TMPCLONE"
     fi
 fi
@@ -137,7 +137,7 @@ echo "Egress firewall applied."
 # which prevents compiled Verilator binaries (Vtb_tarang) from running.
 # Remount with exec so regression tests can execute compiled binaries.
 # This is a no-op in local Docker mode where exec is already set.
-sudo /usr/local/bin/tarang2-dp1-mount-exec.sh 2>/dev/null || true
+sudo /usr/local/bin/tarang2p1-mount-exec.sh 2>/dev/null || true
 # ─────────────────────────────────────────────────────────────────────────────
 
 mkdir -p "$HOME/.vnc" /tmp/runtime-ubuntu
@@ -267,17 +267,17 @@ if [[ "$LICENSE_OK" == "1" ]]; then
 
 # Fetch key once and write it to ~/.rbk_state (mode 600). Decryption itself
 # happens inside gvim, in memory, when a student opens any *.enc file — no
-# plaintext file is ever written to disk (see tools/tarang2-dp1-crypt.vim).
+# plaintext file is ever written to disk (see tools/tarang2p1-crypt.vim).
 # Logs go to /tmp/lab-crypto.log — visible to root, not ubuntu, for debugging.
 # Default CLASS_TOKEN so key fetch works at container start without setup.sh.
 export CLASS_TOKEN="${CLASS_TOKEN:-vlsi2026}"
-/usr/local/bin/tarang2-dp1-key-init.sh >> /tmp/lab-crypto.log 2>&1 &
+/usr/local/bin/tarang2p1-key-init.sh >> /tmp/lab-crypto.log 2>&1 &
 
 # Watch $WORK for stray plaintext appearing by any means other than gvim —
-# cp, mv, docker cp, anything. tarang2-dp1-crypt.vim only sees Vim's own
+# cp, mv, docker cp, anything. tarang2p1-crypt.vim only sees Vim's own
 # buffer I/O; this catches what that can't, auto-encrypting and shredding
 # any bare plaintext file the instant it shows up. Same log as above.
-/usr/local/bin/tarang2-dp1-sweep.sh >> /tmp/lab-crypto.log 2>&1 &
+/usr/local/bin/tarang2p1-sweep.sh >> /tmp/lab-crypto.log 2>&1 &
 
 # Decrypt every *.enc under $WORK into $WORK/build once, up front, and
 # leave it there for the whole session — DELIBERATE TRADEOFF, see the
@@ -295,10 +295,10 @@ export CLASS_TOKEN="${CLASS_TOKEN:-vlsi2026}"
 # entrypoint.sh is the one script all of them share.
 ( while true; do
       sleep 1800
-      /usr/local/bin/tarang2-dp1-refresh-github >> /tmp/lab-crypto.log 2>&1
+      /usr/local/bin/tarang2p1-refresh-github >> /tmp/lab-crypto.log 2>&1
   done ) &
 
-/usr/local/bin/tarang2-dp1-decrypt-all.sh >> /tmp/lab-crypto.log 2>&1 &
+/usr/local/bin/tarang2p1-decrypt-all.sh >> /tmp/lab-crypto.log 2>&1 &
 
 fi
 # ─────────────────────────────────────────────────────────────────────────────

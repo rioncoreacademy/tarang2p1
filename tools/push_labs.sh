@@ -12,8 +12,8 @@ set -e
 # ── Config ────────────────────────────────────────────────────────────────────
 KEY="${CHIPCRAFT_KEY:-$(echo "MjAyNi1SQmFidS1WTFNJLUxhYi1LZXk=" | base64 -d)}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-FILES_REPO="https://github.com/rioncoreacademy/tarang2-dp1-files.git"
-REPO_DIR="$(dirname "$SCRIPT_DIR")/tarang2-dp1-files"
+FILES_REPO="https://github.com/rioncoreacademy/tarang2p1-files.git"
+REPO_DIR="$(dirname "$SCRIPT_DIR")/tarang2p1-files"
 
 # ── Check argument ────────────────────────────────────────────────────────────
 if [[ -z "${1:-}" ]]; then

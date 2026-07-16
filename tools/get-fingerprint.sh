@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Linux/Mac equivalent of docker-license-test/client/Get-Fingerprint.ps1 —
 # computes the same kind of host-anchored fingerprint (a stable per-machine
-# ID, SHA256'd) for use with LICENSE_KEY when running the tarang2-dp1 image
+# ID, SHA256'd) for use with LICENSE_KEY when running the tarang2p1 image
 # via `docker run` on a personal machine (Local Docker Mode).
 #
 # Must run on the HOST, not inside a container — pass the result in:
 #   FP=$(bash tools/get-fingerprint.sh)
-#   docker run -e LICENSE_KEY=... -e LICENSE_FINGERPRINT=$FP ... tarang2-dp1
+#   docker run -e LICENSE_KEY=... -e LICENSE_FINGERPRINT=$FP ... tarang2p1
 set -euo pipefail
 
 if [[ "$(uname)" == "Darwin" ]]; then

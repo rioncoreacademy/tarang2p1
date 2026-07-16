@@ -33,7 +33,7 @@ if [[ "$FILE" == *.enc ]]; then
         echo "ERROR: Set CHIPCRAFT_KEY env var to decrypt the file first." >&2
         exit 1
     fi
-    TMPF=$(mktemp /tmp/tarang2-dp1_leak_XXXXX.v)
+    TMPF=$(mktemp /tmp/tarang2p1_leak_XXXXX.v)
     openssl enc -d -aes-256-cbc -pbkdf2 \
         -k "$KEY" -in "$FILE" -out "$TMPF" 2>/dev/null
     FILE="$TMPF"

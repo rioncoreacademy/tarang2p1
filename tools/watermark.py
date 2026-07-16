@@ -6,7 +6,7 @@ Encodes a student identifier as binary bits into trailing spaces on each line.
 The watermark is invisible to readers and survives copy-paste, editor saves,
 and deletion of the visible comment at the top of the file.
 
-Usage (from tarang2-dp1-crypt.vim, via the %! filter):
+Usage (from tarang2p1-crypt.vim, via the %! filter):
   python3 watermark.py encode "github_user" < file.v > watermarked.v
 
 Usage (teacher detection tool):

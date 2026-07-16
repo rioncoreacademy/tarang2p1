@@ -20,7 +20,7 @@ Docker containers (ports 6081–6085)
 - FastAPI runs directly inside the devcontainer (not as a Docker container) so Codespaces can forward port 80
 - Each student container is spawned dynamically using the Docker socket (docker-outside-of-docker)
 - Sessions are stored in-memory — students must re-login if the server restarts
-- Student work is persisted in named Docker volumes (`tarang2-dp1-{username}`)
+- Student work is persisted in named Docker volumes (`tarang2p1-{username}`)
 
 ## Files
 
@@ -70,7 +70,7 @@ Select **"Tarang2_dp1 — Multi-User Server"** config.
 After the Codespace starts, run in the terminal:
 
 ```bash
-cd /workspaces/tarang2-dp1 && docker build -t ubuntu-novnc:latest .
+cd /workspaces/tarang2p1 && docker build -t ubuntu-novnc:latest .
 ```
 
 This builds the `ubuntu-novnc:latest` image that students' containers use.
@@ -78,7 +78,7 @@ This builds the `ubuntu-novnc:latest` image that students' containers use.
 ### 5. Start the API Server
 
 ```bash
-cd /workspaces/tarang2-dp1/api && nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 80 > /tmp/api.log 2>&1 &
+cd /workspaces/tarang2p1/api && nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 80 > /tmp/api.log 2>&1 &
 ```
 
 ### 6. Make Port 80 Public
@@ -170,5 +170,5 @@ docker rm -f $(docker ps -aq --filter "name=cc-")
 
 **ubuntu-novnc image not found:**
 ```bash
-cd /workspaces/tarang2-dp1 && docker build -t ubuntu-novnc:latest .
+cd /workspaces/tarang2p1 && docker build -t ubuntu-novnc:latest .
 ```

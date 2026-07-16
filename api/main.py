@@ -101,7 +101,7 @@ threading.Thread(target=_cleanup_loop, daemon=True).start()
 
 def _launch_container(github_user: str, port: int, session_token: str) -> str:
     dc = docker.from_env()
-    vol = f"tarang2-dp1-{github_user}"
+    vol = f"tarang2p1-{github_user}"
     try:
         dc.volumes.get(vol)
     except docker.errors.NotFound:

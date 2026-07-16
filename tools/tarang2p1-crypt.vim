@@ -11,13 +11,13 @@
 " not source to decrypt and edit.
 "
 " The key is read from ~/.rbk_state (written once at container startup by
-" tarang2-dp1-key-init.sh) rather than an environment variable, so it doesn't
+" tarang2p1-key-init.sh) rather than an environment variable, so it doesn't
 " show up in `env` or `docker inspect`.
 
-if exists('g:loaded_tarang2-dp1_crypt')
+if exists('g:loaded_tarang2p1_crypt')
   finish
 endif
-let g:loaded_tarang2-dp1_crypt = 1
+let g:loaded_tarang2p1_crypt = 1
 
 set viminfo=
 
@@ -134,10 +134,10 @@ function! s:Encrypt()
   let l:ok = v:shell_error == 0
 
   " If a persistent decrypted copy exists in build/ for this file (put
-  " there by tarang2-dp1-decrypt-all.sh at startup), sync it now so that
+  " there by tarang2p1-decrypt-all.sh at startup), sync it now so that
   " compile.pl/regress.pl see the latest edit, not the stale startup copy.
   " Uses the watermarked plaintext (no visible header) — same format that
-  " tarang2-dp1-decrypt-all.sh produces — so the build/ copy stays consistent.
+  " tarang2p1-decrypt-all.sh produces — so the build/ copy stays consistent.
   if l:ok
     let l:inner = fnamemodify(l:enc_path, ':r')
     if l:inner =~# '^' . escape(s:lab_root, '/\') . '/'
@@ -173,7 +173,7 @@ endfunction
 " typo, not a deliberate bypass — none of the above applies: Vim's default
 " swapfile is created, and :w would write real plaintext straight to disk,
 " completely outside the encryption scheme. This mirrors the same allowlist
-" tarang2-dp1-files/.gitignore already enforces at the git layer (only
+" tarang2p1-files/.gitignore already enforces at the git layer (only
 " Makefile/.gitignore/.gitattributes/README.md and *.enc are real plaintext),
 " but live in the editor instead of just at commit time.
 " build/ is exempt for reads — that is the tmpfs build-scratch area where

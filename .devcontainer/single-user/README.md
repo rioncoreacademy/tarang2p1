@@ -8,7 +8,7 @@ Each student gets their own isolated Codespace with a full XFCE4 desktop running
 Student opens repo → creates Codespace → XFCE4 desktop opens on port 6080
 ```
 
-- The devcontainer pulls `ghcr.io/rioncoreacademy/tarang2-dp1:v1.1` from GitHub Container Registry
+- The devcontainer pulls `ghcr.io/rioncoreacademy/tarang2p1:v1.1` from GitHub Container Registry
 - `start.sh` launches TightVNC + websockify inside the container
 - Port 6080 is forwarded by Codespaces and opens automatically in the browser
 - No login required — password is `novnc`
@@ -22,7 +22,7 @@ Student opens repo → creates Codespace → XFCE4 desktop opens on port 6080
 
 ## Student Instructions
 
-1. Go to `https://github.com/rioncoreacademy/tarang2-dp1`
+1. Go to `https://github.com/rioncoreacademy/tarang2p1`
 2. Click **Code → Codespaces → Create codespace on main**
 3. When prompted, select **"Tarang2_dp1 — Digital Design & VLSI"**
 4. Wait ~2 minutes for the container to start
@@ -34,7 +34,7 @@ Student opens repo → creates Codespace → XFCE4 desktop opens on port 6080
 
 - Each student needs a **GitHub account**
 - The repo must be **public** (or students added as collaborators)
-- The GHCR image `ghcr.io/rioncoreacademy/tarang2-dp1` must be **public**
+- The GHCR image `ghcr.io/rioncoreacademy/tarang2p1` must be **public**
 
 ## How to Make Repo & Image Public
 
@@ -42,7 +42,7 @@ Student opens repo → creates Codespace → XFCE4 desktop opens on port 6080
 GitHub → repo Settings → scroll to Danger Zone → **Change visibility → Public**
 
 **GHCR Image:**
-GitHub → your profile → Packages → `tarang2-dp1` → Package Settings → **Change visibility → Public**
+GitHub → your profile → Packages → `tarang2p1` → Package Settings → **Change visibility → Public**
 
 ## How Many Students
 
@@ -61,7 +61,7 @@ The image is built automatically by GitHub Actions when the `Dockerfile` changes
 Pin to a version tag rather than `:latest` (which moves on every push to `master`):
 
 ```
-ghcr.io/rioncoreacademy/tarang2-dp1:v1.1
+ghcr.io/rioncoreacademy/tarang2p1:v1.1
 ```
 
 Workflow: `.github/workflows/publish-image.yml`
@@ -117,7 +117,7 @@ Get a token at: **github.com → Settings → Developer settings → Personal ac
 
 **Desktop not loading:**
 ```bash
-export USER=ubuntu && bash /workspaces/tarang2-dp1/.devcontainer/single-user/start.sh
+export USER=ubuntu && bash /workspaces/tarang2p1/.devcontainer/single-user/start.sh
 ```
 
 **Check if VNC is running:**

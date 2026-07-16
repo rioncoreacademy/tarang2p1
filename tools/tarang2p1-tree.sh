@@ -1,7 +1,7 @@
 #!/bin/bash
 # Tarang2_dp1 — decrypt/shred an entire subtree for multi-file build flows.
 #
-# gvim (tarang2-dp1-crypt.vim) handles single-file editing in memory; the
+# gvim (tarang2p1-crypt.vim) handles single-file editing in memory; the
 # top-level Makefile handles single-file iverilog compiles. Neither covers a
 # project like tarang2_dp1, whose own build/regression scripts (bash_proj,
 # compile.pl, regress.pl — themselves encrypted) need a whole subtree of
@@ -13,11 +13,11 @@
 # generalized to many files instead of one.
 #
 # Usage:
-#   tarang2-dp1-tree shell tarang2_dp1   (recommended) decrypt, drop into a
+#   tarang2p1-tree shell tarang2_dp1   (recommended) decrypt, drop into a
 #                                      subshell cd'd into it, auto-shred on exit
-#   tarang2-dp1-tree start tarang2_dp1   decrypt only — for scripted/non-interactive
+#   tarang2p1-tree start tarang2_dp1   decrypt only — for scripted/non-interactive
 #                                      use; YOU must remember to run `stop`
-#   tarang2-dp1-tree stop  tarang2_dp1   shred ~/lab/build/tarang2_dp1
+#   tarang2p1-tree stop  tarang2_dp1   shred ~/lab/build/tarang2_dp1
 #
 # `shell` is preferred: a forgotten `stop` after `start` leaves real plaintext
 # sitting on disk for however long the rest of the session runs. `shell`
@@ -26,7 +26,7 @@
 # be trapped by any process — that's a kernel-level limit, not specific to
 # this script.)
 #
-# WORK can be overridden: WORK=~/mywork tarang2-dp1-tree start foo
+# WORK can be overridden: WORK=~/mywork tarang2p1-tree start foo
 
 set -euo pipefail
 
@@ -35,7 +35,7 @@ BUILD="${BUILD:-/workspaces/projects/build}"
 KEYFILE="$HOME/.rbk_state"
 
 usage() {
-    echo "Usage: tarang2-dp1-tree {shell|start|stop} <subtree>" >&2
+    echo "Usage: tarang2p1-tree {shell|start|stop} <subtree>" >&2
     exit 1
 }
 
@@ -90,7 +90,7 @@ case "$CMD" in
     start)
         _decrypt_subtree "$SRC" "$DST"
         echo "[lab] Decrypted $SUBTREE -> $DST"
-        echo "[lab] Remember: tarang2-dp1-tree stop $SUBTREE when you're done."
+        echo "[lab] Remember: tarang2p1-tree stop $SUBTREE when you're done."
         ;;
     stop)
         _shred_subtree "$DST"

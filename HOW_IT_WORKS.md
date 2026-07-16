@@ -23,11 +23,11 @@ an environment variable in the container, so `docker inspect` reveals nothing us
 
 | Repo | URL | Purpose |
 |---|---|---|
-| `tarang2-dp1` | github.com/rioncoreacademy/tarang2-dp1 | Infrastructure — Dockerfile, API, entrypoint, tools |
-| `tarang2-dp1-files` | github.com/rioncoreacademy/tarang2-dp1-files | Encrypted `.v.enc` files + Makefile |
-| `tarang2-dp1-user` | github.com/rioncoreacademy/tarang2-dp1-user | VS Code Codespace launch only (devcontainer) |
+| `tarang2p1` | github.com/rioncoreacademy/tarang2p1 | Infrastructure — Dockerfile, API, entrypoint, tools |
+| `tarang2p1-files` | github.com/rioncoreacademy/tarang2p1-files | Encrypted `.v.enc` files + Makefile |
+| `tarang2p1-user` | github.com/rioncoreacademy/tarang2p1-user | VS Code Codespace launch only (devcontainer) |
 
-> **`tarang2-dp1-files` is public** (files are encrypted so sharing them is safe).
+> **`tarang2p1-files` is public** (files are encrypted so sharing them is safe).
 > The API forks it into each student account on login (Server Mode).
 > In Codespace/Docker Mode, students clone it directly.
 
@@ -39,7 +39,7 @@ an environment variable in the container, so `docker inspect` reveals nothing us
 +--------------------------------------------------------------------------+
 |  TEACHER'S PC                                                            |
 |                                                                          |
-|  counter.v  --encrypt-->  counter.v.enc  --push-->  tarang2-dp1-files |
+|  counter.v  --encrypt-->  counter.v.enc  --push-->  tarang2p1-files |
 |  (private)    encrypt_lab.sh   (safe to share)      github.com/rioncoreacademy   |
 +--------------------------------------------------------------------------+
                                                               |
@@ -57,7 +57,7 @@ an environment variable in the container, so `docker inspect` reveals nothing us
 |  |                  | token  |    Makefile                           |   |
 |  |  GitHub OAuth    |        |    mywork/         <- student .v files|   |
 |  +------------------+        |                                       |   |
-|                               |  ~/.tarang2-dp1_key  (mode 600)         |   |
+|                               |  ~/.tarang2p1_key  (mode 600)         |   |
 |                               |  gvim decrypts *.v.enc in memory      |   |
 |                               |  (no plaintext .v file written)       |   |
 |                               |                                       |   |
@@ -78,31 +78,31 @@ an environment variable in the container, so `docker inspect` reveals nothing us
 
 | File / Service | Repo | Role |
 |---|---|---|
-| `tools/encrypt_lab.sh` | tarang2-dp1 | Teacher encrypts `.v` files on their PC |
-| `tools/tarang2-dp1-key-init.sh` | tarang2-dp1 | Container — fetches the key once, writes `~/.tarang2-dp1_key` (mode 600) |
-| `tools/tarang2-dp1-tree.sh` | tarang2-dp1 | Container — decrypts/shreds a whole subtree on demand (session-scoped alternative; not required for `tarang2_dp1` day to day, see below) |
-| `tools/tarang2-dp1-decrypt-all.sh` | tarang2-dp1 | Container — decrypts every `.enc` under `~/lab` into `~/lab/build` once at startup, persists for the whole session (deliberate tradeoff — see "Multi-file projects" below) |
-| `tools/tarang2-dp1-sweep.sh` | tarang2-dp1 | Container — background watcher; encrypts `.v` in WORK and syncs to BUILD; encrypts user-created `.v` in BUILD to WORK |
-| `tools/tarang2-dp1-refresh-github-ips.sh` | tarang2-dp1 | Installed as `/usr/local/bin/tarang2-dp1-refresh-github` — re-fetches GitHub's current IP ranges and allowlists them in the egress firewall on demand, for when `git pull`/`clone`/`push` hangs because GitHub rotated an IP since container start |
-| `tools/tarang2-dp1-github-ssh-setup.sh` | tarang2-dp1 | Installed as `/usr/local/bin/tarang2-dp1-github-ssh-setup` — generates an SSH key if needed and uploads it to the student's own GitHub account via the API (clipboard is blocked, so pasting a key into GitHub's web UI isn't possible from inside the container) |
-| `tools/tarang2-dp1-vim-wrapper.sh` | tarang2-dp1 | Installed as `/usr/local/bin/vi`, `vim`, `gvim` — silently redirects `*.v` args to `*.v.enc` so users cannot create raw `.v` files |
-| `tools/tarang2-dp1-crypt.vim` | tarang2-dp1 | System-wide gvim plugin — decrypts/encrypts `*.v.enc` in memory, no plaintext file ever written |
-| `tools/watermark.py` | tarang2-dp1 | Embeds / reads invisible trailing-space watermark |
-| `tools/detect_leak.sh` | tarang2-dp1 | Teacher tool — identifies student from a leaked file |
-| `tools/git-wrapper.sh` | tarang2-dp1 | Installed as `/usr/local/bin/git` — blocks git outside `~/lab/` |
-| `api/main.py` | tarang2-dp1 | FastAPI — GitHub OAuth, container launch, key delivery |
-| `router/app.py` | tarang2-dp1 | Load balancer across student containers |
-| `Dockerfile` | tarang2-dp1 | Builds student desktop image (XFCE + VNC + Verilator) |
-| `entrypoint.sh` | tarang2-dp1 | Container startup — VNC, firewall, key fetch |
-| `docker-compose.yml` | tarang2-dp1 | Defines API service and build targets |
+| `tools/encrypt_lab.sh` | tarang2p1 | Teacher encrypts `.v` files on their PC |
+| `tools/tarang2p1-key-init.sh` | tarang2p1 | Container — fetches the key once, writes `~/.tarang2p1_key` (mode 600) |
+| `tools/tarang2p1-tree.sh` | tarang2p1 | Container — decrypts/shreds a whole subtree on demand (session-scoped alternative; not required for `tarang2_dp1` day to day, see below) |
+| `tools/tarang2p1-decrypt-all.sh` | tarang2p1 | Container — decrypts every `.enc` under `~/lab` into `~/lab/build` once at startup, persists for the whole session (deliberate tradeoff — see "Multi-file projects" below) |
+| `tools/tarang2p1-sweep.sh` | tarang2p1 | Container — background watcher; encrypts `.v` in WORK and syncs to BUILD; encrypts user-created `.v` in BUILD to WORK |
+| `tools/tarang2p1-refresh-github-ips.sh` | tarang2p1 | Installed as `/usr/local/bin/tarang2p1-refresh-github` — re-fetches GitHub's current IP ranges and allowlists them in the egress firewall on demand, for when `git pull`/`clone`/`push` hangs because GitHub rotated an IP since container start |
+| `tools/tarang2p1-github-ssh-setup.sh` | tarang2p1 | Installed as `/usr/local/bin/tarang2p1-github-ssh-setup` — generates an SSH key if needed and uploads it to the student's own GitHub account via the API (clipboard is blocked, so pasting a key into GitHub's web UI isn't possible from inside the container) |
+| `tools/tarang2p1-vim-wrapper.sh` | tarang2p1 | Installed as `/usr/local/bin/vi`, `vim`, `gvim` — silently redirects `*.v` args to `*.v.enc` so users cannot create raw `.v` files |
+| `tools/tarang2p1-crypt.vim` | tarang2p1 | System-wide gvim plugin — decrypts/encrypts `*.v.enc` in memory, no plaintext file ever written |
+| `tools/watermark.py` | tarang2p1 | Embeds / reads invisible trailing-space watermark |
+| `tools/detect_leak.sh` | tarang2p1 | Teacher tool — identifies student from a leaked file |
+| `tools/git-wrapper.sh` | tarang2p1 | Installed as `/usr/local/bin/git` — blocks git outside `~/lab/` |
+| `api/main.py` | tarang2p1 | FastAPI — GitHub OAuth, container launch, key delivery |
+| `router/app.py` | tarang2p1 | Load balancer across student containers |
+| `Dockerfile` | tarang2p1 | Builds student desktop image (XFCE + VNC + Verilator) |
+| `entrypoint.sh` | tarang2p1 | Container startup — VNC, firewall, key fetch |
+| `docker-compose.yml` | tarang2p1 | Defines API service and build targets |
 | `.env` | server only | Server-side secrets — never committed |
-| `*.v.enc` | tarang2-dp1-files | Encrypted Verilog lab files |
-| `mywork/` | tarang2-dp1-files | Student-created work (only `.v.enc` files — auto-encrypted on save) |
-| `Makefile` | tarang2-dp1-files | `make` / `make wave` / `make clean` |
-| `.gitignore` | tarang2-dp1-files | Blocks everything; only `*.enc` and repo infra files allowed |
-| `.devcontainer/setup.sh` | tarang2-dp1-user | Codespace startup — clones lab, fetches key, starts decrypt, registers pre-commit hook |
-| `.devcontainer/devcontainer.json` | tarang2-dp1-user | Codespace config — image, ports, postAttachCommand |
-| `tools/pre-commit` | tarang2-dp1 (image) | Git hook baked into Docker image at `/usr/local/lib/tarang2-dp1-hooks/` — root-owned, students cannot edit |
+| `*.v.enc` | tarang2p1-files | Encrypted Verilog lab files |
+| `mywork/` | tarang2p1-files | Student-created work (only `.v.enc` files — auto-encrypted on save) |
+| `Makefile` | tarang2p1-files | `make` / `make wave` / `make clean` |
+| `.gitignore` | tarang2p1-files | Blocks everything; only `*.enc` and repo infra files allowed |
+| `.devcontainer/setup.sh` | tarang2p1-user | Codespace startup — clones lab, fetches key, starts decrypt, registers pre-commit hook |
+| `.devcontainer/devcontainer.json` | tarang2p1-user | Codespace config — image, ports, postAttachCommand |
+| `tools/pre-commit` | tarang2p1 (image) | Git hook baked into Docker image at `/usr/local/lib/tarang2p1-hooks/` — root-owned, students cannot edit |
 
 ---
 
@@ -188,7 +188,7 @@ bash NVR/tools/encrypt_lab.sh labs/
 openssl enc -aes-256-cbc -pbkdf2 -salt -k "$KEY" -in counter.v -out counter.v.enc
 ```
 
-### Pushing Encrypted Files to tarang2-dp1-files
+### Pushing Encrypted Files to tarang2p1-files
 
 Only encrypted files go to GitHub. The `.gitignore` blocks everything except `.enc` files:
 
@@ -200,7 +200,7 @@ Only encrypted files go to GitHub. The `.gitignore` blocks everything except `.e
 ```
 
 ```bash
-cd tarang2-dp1-files
+cd tarang2p1-files
 cp ../labs/*.v.enc .
 git add *.v.enc
 git commit -m "lab1: counter"
@@ -219,13 +219,13 @@ Priority 1 — Server Mode (API bootstrap token)
   API validates the one-time token and returns CHIPCRAFT_KEY
 
 Priority 2 — Codespace / Local Docker (Cloudflare Worker)
-  setup.sh or tarang2-dp1-key-init.sh sends CLASS_TOKEN to Cloudflare Worker
+  setup.sh or tarang2p1-key-init.sh sends CLASS_TOKEN to Cloudflare Worker
   Worker validates CLASS_TOKEN and returns CHIPCRAFT_KEY
   CHIPCRAFT_KEY is never stored in any environment variable —
-  tarang2-dp1-key-init.sh writes it straight to ~/.tarang2-dp1_key (mode 600)
+  tarang2p1-key-init.sh writes it straight to ~/.tarang2p1_key (mode 600)
 
 Priority 3 — Codespace fallback (CHIPCRAFT_KEY direct env var)
-  If CHIPCRAFT_KEY is set as a Codespace secret, tarang2-dp1-key-init.sh reads it
+  If CHIPCRAFT_KEY is set as a Codespace secret, tarang2p1-key-init.sh reads it
 
 Priority 4 — Development / testing (LAB_KEY env var)
   If LAB_KEY is set locally, use it for local testing
@@ -254,11 +254,11 @@ Teacher sets two secrets in Cloudflare dashboard:
 Student container has CLASS_TOKEN in its environment:
   (visible in docker inspect, but harmless — it is just a door pass)
 
-When tarang2-dp1-key-init.sh needs the key:
+When tarang2p1-key-init.sh needs the key:
   POST https://chipcraft-key.nagajyothibonthagorla.workers.dev
   Body: { "class_token": "vlsi2026", "user": "student_github_name" }
   (Worker still lives under its pre-rename ChipCraft name — was never
-  renamed/redeployed to tarang2-dp1-key.* on Cloudflare.)
+  renamed/redeployed to tarang2p1-key.* on Cloudflare.)
 
 Worker checks CLASS_TOKEN:
   Match    -> returns { "key": "your-key" }
@@ -290,14 +290,14 @@ export default {
 
 ```
 1. Go to cloudflare.com -> Workers & Pages -> Create application
-2. Choose "Start with Hello World" -> name it tarang2-dp1-key -> Deploy
+2. Choose "Start with Hello World" -> name it tarang2p1-key -> Deploy
 3. Open the worker -> Edit code -> paste the code above -> Deploy
 4. Go to Settings -> Variables and Secrets -> Add:
      CLASS_TOKEN   = vlsi2026        (give this to students)
      CHIPCRAFT_KEY = your-key        (keep this to yourself)
 5. Update WORKER_URL in:
-     NVR/tools/tarang2-dp1-key-init.sh
-     tarang2-dp1-user/.devcontainer/setup.sh
+     NVR/tools/tarang2p1-key-init.sh
+     tarang2p1-user/.devcontainer/setup.sh
 ```
 
 ---
@@ -311,27 +311,27 @@ export default {
 
 3. Student logs in via GitHub OAuth
 
-4. API forks tarang2-dp1-files -> student GitHub account
+4. API forks tarang2p1-files -> student GitHub account
    API clones student fork       -> ~/lab/ inside the container
 
 5. API generates BOOTSTRAP_TOKEN (32 random bytes, expires in 30 seconds)
    API launches student container with BOOTSTRAP_TOKEN only
    (CHIPCRAFT_KEY is NOT passed to the student container)
 
-6. Container starts -> tarang2-dp1-key-init.sh runs
+6. Container starts -> tarang2p1-key-init.sh runs
 
-7. tarang2-dp1-key-init.sh calls:
+7. tarang2p1-key-init.sh calls:
    POST http://api:8000/lab-key  { "token": "<BOOTSTRAP_TOKEN>" }
    (over internal Docker network — not reachable from student browser)
 
 8. API validates: IP check + not expired + single-use
 
-9. API returns CHIPCRAFT_KEY; tarang2-dp1-key-init.sh writes it to
-   ~/.tarang2-dp1_key (mode 600, owned by ubuntu); BOOTSTRAP_TOKEN immediately
+9. API returns CHIPCRAFT_KEY; tarang2p1-key-init.sh writes it to
+   ~/.tarang2p1_key (mode 600, owned by ubuntu); BOOTSTRAP_TOKEN immediately
    unset from environment
 
-10. Student opens ~/lab/counter.v.enc in gvim. The tarang2-dp1-crypt.vim plugin
-    reads ~/.tarang2-dp1_key, pipes the buffer through openssl, embeds the
+10. Student opens ~/lab/counter.v.enc in gvim. The tarang2p1-crypt.vim plugin
+    reads ~/.tarang2p1_key, pipes the buffer through openssl, embeds the
     invisible watermark — all inside the editor buffer. No plaintext .v file
     is written to disk.
 
@@ -348,7 +348,7 @@ export default {
 | Copy `.v.enc` file and decrypt | They do not have the key |
 | Read `.env` file | On the server — not inside the container |
 | `docker inspect api` | Requires Docker daemon access — students do not have it |
-| `cat ~/.tarang2-dp1_key` | **Not blocked** — same Linux user as gvim, so the key is readable by design. The point of this file is keeping the key off `env`/`docker inspect`, not hiding it from the student's own shell — that's structurally impossible once the same user must decrypt their own files. |
+| `cat ~/.tarang2p1_key` | **Not blocked** — same Linux user as gvim, so the key is readable by design. The point of this file is keeping the key off `env`/`docker inspect`, not hiding it from the student's own shell — that's structurally impossible once the same user must decrypt their own files. |
 
 ---
 
@@ -359,14 +359,14 @@ and **compiling** (`make`, which needs a real file for `iverilog` to read).
 
 ### Editing — gvim, in memory, no plaintext file ever
 
-`tarang2-dp1-key-init.sh` runs once at container startup and writes the key to
-`~/.tarang2-dp1_key` (mode 600). The `tarang2-dp1-crypt.vim` plugin (loaded
+`tarang2p1-key-init.sh` runs once at container startup and writes the key to
+`~/.tarang2p1_key` (mode 600). The `tarang2p1-crypt.vim` plugin (loaded
 system-wide for every user) hooks `*.v.enc` files:
 
 ```
 Student runs:  gvim ~/lab/counter.v.enc
          |
-         |  BufReadCmd fires — plugin reads ~/.tarang2-dp1_key
+         |  BufReadCmd fires — plugin reads ~/.tarang2p1_key
          |  openssl enc -d -k "$KEY"   (piped straight into the buffer)
          |  watermark.py encode "@github_user"
          v
@@ -387,13 +387,13 @@ filename that doesn't exist yet creates it; `:w` encrypts straight to that path.
 ### Compiling — decrypt just-in-time, shred immediately
 
 `iverilog`/`vvp`/`gtkwave` are separate processes; they can only read real
-files. `make` (in `tarang2-dp1-files/Makefile`) bridges this gap with the
+files. `make` (in `tarang2p1-files/Makefile`) bridges this gap with the
 smallest possible exposure window:
 
 ```
 make / make wave / make run FILE=counter
          |
-         |  _decrypt: openssl enc -d -k "$(cat ~/.tarang2-dp1_key)"
+         |  _decrypt: openssl enc -d -k "$(cat ~/.tarang2p1_key)"
          v
 ~/lab/build/*.v   (tmpfs — exists only for the few seconds iverilog runs)
          |
@@ -406,7 +406,7 @@ make / make wave / make run FILE=counter
 ~/lab/build/*.v no longer exists — only the compiled .vvp and any .vcd remain
 ```
 
-### Multi-file projects — tarang2-dp1-decrypt-all (e.g. tarang2_dp1)
+### Multi-file projects — tarang2p1-decrypt-all (e.g. tarang2_dp1)
 
 Some lab content isn't a single-file `make` away from compiling — `tarang2_dp1`
 is a full 8051-style CPU core with its own Perl/bash-driven build and
@@ -415,13 +415,13 @@ themselves encrypted and need a whole subtree of real files, at their real
 relative paths, coexisting on disk at once. Neither gvim (one file, in
 memory) nor the `Makefile` (one flattened batch, for `iverilog`) covers that.
 
-**`tarang2-dp1-decrypt-all.sh` decrypts every `*.enc` under `~/lab` into
+**`tarang2p1-decrypt-all.sh` decrypts every `*.enc` under `~/lab` into
 `~/lab/build` once, automatically, at container startup — and leaves it
 there for the whole session.** No manual step, no exit-to-shred. This is a
 **deliberate security tradeoff, not an oversight**: it restores the same
 shape as the original always-decrypted model this project moved away from
 earlier in its design, chosen specifically to remove the start/work/exit
-friction that the previous session-scoped tool (`tarang2-dp1-tree`) required
+friction that the previous session-scoped tool (`tarang2p1-tree`) required
 for multi-file projects like this one.
 
 Concretely, this means:
@@ -431,7 +431,7 @@ bash ../scripts/bash_proj
 perl ../scripts/compile.pl
 perl ../scripts/regress.pl -r
 ```
-— works immediately, every session, no `tarang2-dp1-tree shell`/`exit` dance.
+— works immediately, every session, no `tarang2p1-tree shell`/`exit` dance.
 
 **What this costs**: `tarang2_dp1`'s real plaintext source sits on disk in
 `~/lab/build` for the *entire container lifetime*, not just during a brief
@@ -443,7 +443,7 @@ model) — those two are unaffected by this change and remain narrow-window/
 in-memory only. Only the bulk multi-file-project content in `build` is
 now persistently decrypted.
 
-`tarang2-dp1-tree` (`shell`/`start`/`stop`) still exists and still works
+`tarang2p1-tree` (`shell`/`start`/`stop`) still exists and still works
 exactly as before, for anyone who wants session-scoped decrypt/shred for a
 specific subtree instead of relying on the startup bulk-decrypt — it's just
 no longer required for `tarang2_dp1` day to day.
@@ -451,7 +451,7 @@ no longer required for `tarang2_dp1` day to day.
 ### Blocking .v file creation — vim wrapper
 
 `vi`, `vim`, and `gvim` in `/usr/local/bin/` are replaced by a Tarang2_dp1
-wrapper (`tarang2-dp1-vim-wrapper.sh`) that sits in front of the real binaries:
+wrapper (`tarang2p1-vim-wrapper.sh`) that sits in front of the real binaries:
 
 ```
 Student runs:  vi test.v      (or gvim, vim)
@@ -460,7 +460,7 @@ Student runs:  vi test.v      (or gvim, vim)
                     v
               vi test.v.enc   (opens the encrypted version)
                     |
-                    | tarang2-dp1-crypt.vim plugin decrypts in memory
+                    | tarang2p1-crypt.vim plugin decrypts in memory
                     v
               Editor shows plaintext Verilog — file on disk stays .v.enc
 ```
@@ -471,7 +471,7 @@ headers, `.vcd` waveforms, etc.
 
 ### Catching stray plaintext from touch / cp / mv
 
-`tarang2-dp1-sweep.sh` runs two layers in the background:
+`tarang2p1-sweep.sh` runs two layers in the background:
 - **inotify** (`close_write`, `moved_to`) — reacts within milliseconds
 - **Full-tree poll every 5 seconds** — backstop for events inotify misses
   (e.g. `cp -r` flooding a new directory before its watch is registered)
@@ -504,7 +504,7 @@ Its role differs by what put content there. For the simple `counter.v` lab,
 `make`'s decrypt-compile-shred keeps it narrow: plaintext `.v` source exists
 only for the duration of one compile, and compiled `.vvp`/`.vcd` output (not
 readable source) is what persists between builds. For multi-file projects
-like `tarang2_dp1`, `tarang2-dp1-decrypt-all.sh` decrypts everything into here
+like `tarang2_dp1`, `tarang2p1-decrypt-all.sh` decrypts everything into here
 once at startup and leaves it for the whole session — real plaintext source,
 not just compiled output, persisting the entire time. See "Multi-file
 projects" above for why that tradeoff was chosen.
@@ -545,33 +545,33 @@ The clipboard is blocked (`-noclipboard`) so you cannot copy the public key from
 the terminal to your host browser directly. Use `curl` to add the key to GitHub
 via the API instead — GitHub HTTPS is whitelisted by the egress firewall.
 
-### Quick way — `tarang2-dp1-github-ssh-setup`
+### Quick way — `tarang2p1-github-ssh-setup`
 
 Wraps steps 1-3 below into one command: generates an ed25519 key if one
 doesn't already exist, uploads it to your GitHub account, and verifies it.
 
 ```bash
-tarang2-dp1-github-ssh-setup <GITHUB_PERSONAL_TOKEN> ["key title"]
+tarang2p1-github-ssh-setup <GITHUB_PERSONAL_TOKEN> ["key title"]
 ```
 
 Needs a Personal Access Token with the `write:public_key` scope — see Step 2
 below for where to create one. The manual steps are below for reference.
 
-### Verifying `tarang2-dp1-github-ssh-setup` works
+### Verifying `tarang2p1-github-ssh-setup` works
 
 ```bash
 # 1. Installed and on PATH
-which tarang2-dp1-github-ssh-setup
-# -> /usr/local/bin/tarang2-dp1-github-ssh-setup
+which tarang2p1-github-ssh-setup
+# -> /usr/local/bin/tarang2p1-github-ssh-setup
 
 # 2. No-token error path — should print usage and exit 1, not hang/crash
-tarang2-dp1-github-ssh-setup
+tarang2p1-github-ssh-setup
 echo $?   # -> 1
 
 # 3. Real run — creates the token at github.com -> Settings -> Developer
 #    settings -> Personal access tokens -> Tokens (classic), write:public_key
 #    scope only
-tarang2-dp1-github-ssh-setup "$YOUR_TOKEN" "test key"
+tarang2p1-github-ssh-setup "$YOUR_TOKEN" "test key"
 # Watch for:
 #   "No SSH key found ... generating a new ed25519 key..." (first run)
 #     or "Using existing key" (subsequent runs)
@@ -585,17 +585,17 @@ tarang2-dp1-github-ssh-setup "$YOUR_TOKEN" "test key"
 #    "Using existing key" (not regenerate) and either succeed again or fail
 #    with GitHub's "key already in use" error — either way, no crash and the
 #    existing key file is untouched.
-tarang2-dp1-github-ssh-setup "$YOUR_TOKEN" "test key"
+tarang2p1-github-ssh-setup "$YOUR_TOKEN" "test key"
 
 # 6. End-to-end: actually use the key for a git operation (revert the
 #    remote back to HTTPS afterward if you don't want it left changed)
 cd /workspaces/projects/.build.enc
-git remote set-url origin git@github.com:rioncoreacademy/tarang2-dp1-files.git
+git remote set-url origin git@github.com:rioncoreacademy/tarang2p1-files.git
 git fetch origin
 
 # 7. Bad-token error path — should print a clean HTTP 401 + GitHub's error
 #    body, not hang or stack-trace
-tarang2-dp1-github-ssh-setup "not-a-real-token"
+tarang2p1-github-ssh-setup "not-a-real-token"
 ```
 
 ### Step 1 — Generate the key
@@ -677,15 +677,15 @@ With the wrapper, `git init` exits immediately with an error.
 `setup.sh` registers `~/lab` to use the hook baked into the image:
 
 ```bash
-/usr/bin/git -C "$HOME/lab" config core.hooksPath /usr/local/lib/tarang2-dp1-hooks
+/usr/bin/git -C "$HOME/lab" config core.hooksPath /usr/local/lib/tarang2p1-hooks
 ```
 
-The hook file is at `/usr/local/lib/tarang2-dp1-hooks/pre-commit` — owned by root,
+The hook file is at `/usr/local/lib/tarang2p1-hooks/pre-commit` — owned by root,
 not writable by the `ubuntu` user. Students cannot modify or delete it.
 
 ### Internal tools bypass the wrapper
 
-`setup.sh` and `tarang2-dp1-key-init.sh` call `/usr/bin/git` directly (not the wrapper)
+`setup.sh` and `tarang2p1-key-init.sh` call `/usr/bin/git` directly (not the wrapper)
 so that automated cloning and pushing of encrypted files works correctly.
 
 ---
@@ -696,7 +696,7 @@ so that automated cloning and pushing of encrypted files works correctly.
 
 ```
 1. Teacher gives you CLASS_TOKEN (e.g. vlsi2026)
-2. Open github.com/rioncoreacademy/tarang2-dp1-user
+2. Open github.com/rioncoreacademy/tarang2p1-user
 3. Click Code -> Open in Codespace
 4. Wait ~2 minutes for the container to start
 5. The XFCE desktop opens automatically in your browser (port 6080)
@@ -709,12 +709,12 @@ How setup.sh works when you attach:
 ```
 postAttachCommand fires (runs AFTER Codespace secrets are injected):
   |
-  +-- git clone tarang2-dp1-files -> ~/lab/
+  +-- git clone tarang2p1-files -> ~/lab/
   |
-  +-- Runs tarang2-dp1-key-init.sh:
+  +-- Runs tarang2p1-key-init.sh:
   |     -> Sends CLASS_TOKEN to Cloudflare Worker
   |     -> Worker validates CLASS_TOKEN, returns CHIPCRAFT_KEY
-  |     -> Writes key to ~/.tarang2-dp1_key (mode 600) — not kept in env
+  |     -> Writes key to ~/.tarang2p1_key (mode 600) — not kept in env
   |
   +-- gvim now decrypts/encrypts *.v.enc files transparently, in memory
 ```
@@ -725,15 +725,15 @@ postAttachCommand fires (runs AFTER Codespace secrets are injected):
 ### Local Docker Mode
 
 ```bash
-docker stop tarang2-dp1 && docker rm tarang2-dp1
-docker pull ghcr.io/rioncoreacademy/tarang2-dp1:v1.1
+docker stop tarang2p1 && docker rm tarang2p1
+docker pull ghcr.io/rioncoreacademy/tarang2p1:v1.1
 
 # Only needed if this image build is license-gated (LICENSE_API_BASE_URL set
 # at build/deploy time) — see "License Gate" below. Must run on the HOST.
 FP=$(bash tools/get-fingerprint.sh)
 
 docker run -d \
-  --name tarang2-dp1 \
+  --name tarang2p1 \
   --cap-add=NET_ADMIN \
   -p 6080:6080 \
   -e CLASS_TOKEN=vlsi2026 \
@@ -741,7 +741,7 @@ docker run -d \
   -e LICENSE_KEY=your-license-key \
   -e LICENSE_FINGERPRINT=$FP \
   --tmpfs /workspaces/projects/build:size=2g,uid=1000,gid=1000,mode=0700 \
-  ghcr.io/rioncoreacademy/tarang2-dp1:v1.1
+  ghcr.io/rioncoreacademy/tarang2p1:v1.1
 # Open http://localhost:6080 in your browser
 ```
 
@@ -749,7 +749,7 @@ docker run -d \
 - `--tmpfs /workspaces/projects/build` mounts the decrypted-files directory as RAM-only
 - Replace `v1.0` with `latest` if you want the bleeding-edge development build
 
-2g, not 100m: `tarang2-dp1-tree`'s Verilator builds (precompiled headers, object
+2g, not 100m: `tarang2p1-tree`'s Verilator builds (precompiled headers, object
 files for a full RTL project) need much more scratch space than a single
 `iverilog` compile of one file ever did. tmpfs is a ceiling, not a
 reservation — it only consumes RAM as data is actually written.
@@ -759,7 +759,7 @@ The `--tmpfs` flag is required — without it, `~/lab/build` (used briefly durin
 be a normal directory on the container's writable disk layer instead of
 RAM-only, the same way it already is in Server Mode.
 
-`entrypoint.sh` clones `tarang2-dp1-files` into `~/lab` automatically on
+`entrypoint.sh` clones `tarang2p1-files` into `~/lab` automatically on
 first start (only when `BOOTSTRAP_TOKEN` isn't set, i.e. not Server Mode) —
 no manual clone step needed. `CLASS_TOKEN` is already present at container
 start (passed via `-e`), so the key fetch succeeds immediately, unlike
@@ -786,7 +786,7 @@ ls /workspaces/projects/build/
 ### Compile and simulate (all modes)
 
 ```bash
-cd ~/lab                 # or tarang2-dp1-files checkout
+cd ~/lab                 # or tarang2p1-files checkout
 make              # decrypts to tmpfs just-in-time, compiles, shreds plaintext immediately
 make wave         # same, + opens GTKWave
 make clean        # remove build outputs (compiled .vvp/.vcd only)
@@ -818,7 +818,7 @@ git push
 Student-created files live directly in `~/lab/mywork/*.v.enc` — there's no
 intermediate plaintext copy to auto-encrypt, since gvim never created one.
 Only `.enc` files can be committed — the pre-commit hook blocks any plain `.v` or other file type.
-The hook lives in the Docker image at `/usr/local/lib/tarang2-dp1-hooks/pre-commit` (root-owned) so students cannot edit or delete it.
+The hook lives in the Docker image at `/usr/local/lib/tarang2p1-hooks/pre-commit` (root-owned) so students cannot edit or delete it.
 
 ---
 
@@ -832,7 +832,7 @@ CHIPCRAFT_KEY=your-secret-key-here
 GH_CLIENT_ID=your_github_oauth_app_id
 GH_CLIENT_SECRET=your_github_oauth_secret
 VNC_PASSWORD=novnc
-TEMPLATE_REPO=rioncoreacademy/tarang2-dp1-files
+TEMPLATE_REPO=rioncoreacademy/tarang2p1-files
 SESSION_TTL=14400
 PORT_START=6081
 PORT_END=6180
@@ -841,16 +841,16 @@ PORT_END=6180
 ### 2. Get the Docker image (GitHub Actions builds it automatically)
 
 Every push to `master` that touches `Dockerfile`, `entrypoint.sh`,
-`tools/tarang2-dp1-key-init.sh`, or `tools/tarang2-dp1-crypt.vim` triggers **GitHub Actions -> Publish Docker Image**
-which builds and pushes `ghcr.io/rioncoreacademy/tarang2-dp1:latest` automatically.
+`tools/tarang2p1-key-init.sh`, or `tools/tarang2p1-crypt.vim` triggers **GitHub Actions -> Publish Docker Image**
+which builds and pushes `ghcr.io/rioncoreacademy/tarang2p1:latest` automatically.
 Pushing a `vX.Y` git tag additionally publishes that exact version
-(`ghcr.io/rioncoreacademy/tarang2-dp1:vX.Y`) — deployments should pin to a
+(`ghcr.io/rioncoreacademy/tarang2p1:vX.Y`) — deployments should pin to a
 version tag like `:v1.1` rather than the floating `:latest`, which moves on
 every push to `master`.
 
 ```bash
-docker pull ghcr.io/rioncoreacademy/tarang2-dp1:v1.1
-docker tag ghcr.io/rioncoreacademy/tarang2-dp1:v1.1 ubuntu-novnc:latest
+docker pull ghcr.io/rioncoreacademy/tarang2p1:v1.1
+docker tag ghcr.io/rioncoreacademy/tarang2p1:v1.1 ubuntu-novnc:latest
 cd NVR
 docker compose up -d
 ```
@@ -859,8 +859,8 @@ To roll out a new version after a code push (once a new version tag has
 been pushed):
 
 ```bash
-docker pull ghcr.io/rioncoreacademy/tarang2-dp1:v1.1
-docker tag  ghcr.io/rioncoreacademy/tarang2-dp1:v1.1 ubuntu-novnc:latest
+docker pull ghcr.io/rioncoreacademy/tarang2p1:v1.1
+docker tag  ghcr.io/rioncoreacademy/tarang2p1:v1.1 ubuntu-novnc:latest
 # New student containers will use the updated image automatically.
 ```
 
@@ -871,7 +871,7 @@ export CHIPCRAFT_KEY="your-secret-key-here"
 bash NVR/tools/encrypt_lab.sh counter.v
 bash NVR/tools/encrypt_lab.sh tb_counter.v
 
-cd tarang2-dp1-files
+cd tarang2p1-files
 cp ../counter.v.enc ../tb_counter.v.enc .
 git add *.v.enc
 git commit -m "lab1: counter"
@@ -888,19 +888,19 @@ git push
 
 # 2. Set Codespace secret  (CLASS_TOKEN only — NOT CHIPCRAFT_KEY)
 #    github.com/settings/codespaces -> New secret
-#    Name: CLASS_TOKEN  Value: vlsi2026  Repo: tarang2-dp1-user
+#    Name: CLASS_TOKEN  Value: vlsi2026  Repo: tarang2p1-user
 
 # 3. Encrypt lab files
 export CHIPCRAFT_KEY="your-key"
 bash NVR/tools/encrypt_lab.sh counter.v
-cp counter.v.enc tarang2-dp1-files/
-cd tarang2-dp1-files && git add *.v.enc && git commit -m "lab1" && git push
+cp counter.v.enc tarang2p1-files/
+cd tarang2p1-files && git add *.v.enc && git commit -m "lab1" && git push
 
-# 4. Make tarang2-dp1-files PUBLIC
-#    github.com/rioncoreacademy/tarang2-dp1-files -> Settings -> Change visibility -> Public
+# 4. Make tarang2p1-files PUBLIC
+#    github.com/rioncoreacademy/tarang2p1-files -> Settings -> Change visibility -> Public
 
-# 5. Invite students to tarang2-dp1-user as collaborators
-#    github.com/rioncoreacademy/tarang2-dp1-user -> Settings -> Collaborators
+# 5. Invite students to tarang2p1-user as collaborators
+#    github.com/rioncoreacademy/tarang2p1-user -> Settings -> Collaborators
 ```
 
 ---
@@ -929,7 +929,7 @@ cd tarang2-dp1-files && git add *.v.enc && git commit -m "lab1" && git push
     (ALL files here are read-only, 444. Dirs readable+executable, not writable)
 
 /home/ubuntu/
-+-- .tarang2-dp1_key              <- decryption key, mode 600 (read by gvim plugin)
++-- .tarang2p1_key              <- decryption key, mode 600 (read by gvim plugin)
 ```
 
 **Paths available as environment variables in every script and the vim plugin:**
@@ -955,11 +955,11 @@ BUILD=/workspaces/projects/build        # decrypted read-only copies (tmpfs)
 | **`echo $CLASS_TOKEN`** | Visible | CLASS_TOKEN is a door pass, not the key — harmless |
 | **`docker cp ~/lab/*.enc`** | Blocked | Ciphertext only — useless without the key |
 | **`docker cp ~/lab/build/counter.v`** (simple lab, via `make`) | Blocked (almost always) | No plaintext `.v` file exists there except for the few seconds a `make` is actively compiling |
-| **`docker cp ~/lab/build/tarang2_dp1/...`** (multi-file projects) | **Not blocked — by design** | `tarang2-dp1-decrypt-all.sh` decrypts this persistently for the whole session (deliberate tradeoff, see "Multi-file projects" above). Real plaintext source, readable at any time. |
+| **`docker cp ~/lab/build/tarang2_dp1/...`** (multi-file projects) | **Not blocked — by design** | `tarang2p1-decrypt-all.sh` decrypts this persistently for the whole session (deliberate tradeoff, see "Multi-file projects" above). Real plaintext source, readable at any time. |
 | **`vi test.v`** / **`gvim test.v`** | Blocked | `vi`/`vim`/`gvim` are wrappers — redirect `*.v` args to `*.v.enc`. No `.v` file is ever created. |
-| **`touch test.v`** in WORK or BUILD | Blocked (within seconds) | `tarang2-dp1-sweep.sh` detects it and encrypts (WORK) or encrypts+locks (BUILD) |
+| **`touch test.v`** in WORK or BUILD | Blocked (within seconds) | `tarang2p1-sweep.sh` detects it and encrypts (WORK) or encrypts+locks (BUILD) |
 | **`cp`/`mv`/`docker cp` dropping `.v` into WORK or BUILD** | Blocked (within seconds) | Sweep auto-encrypts to WORK, leaves read-only copy in BUILD |
-| **`cat ~/.tarang2-dp1_key`** | Not possible to block | Same Linux user as gvim — see note in the key-delivery table above |
+| **`cat ~/.tarang2p1_key`** | Not possible to block | Same Linux user as gvim — see note in the key-delivery table above |
 | **Phone photo / screen recording** | Cannot block | Watermark identifies the student |
 | **Manual typing** the code | Cannot block | Watermark + academic integrity policy |
 
@@ -1021,15 +1021,15 @@ BLOCKED outbound:
 CHIPCRAFT_KEY journey (Codespace / Local Docker):
   Cloudflare Worker secrets (teacher access only)
     -> POST /worker (CLASS_TOKEN validated, CHIPCRAFT_KEY returned in response)
-      -> bash variable in tarang2-dp1-key-init.sh (~2 seconds)
-        -> written to ~/.tarang2-dp1_key (mode 600)  ->  read by gvim plugin per file
+      -> bash variable in tarang2p1-key-init.sh (~2 seconds)
+        -> written to ~/.tarang2p1_key (mode 600)  ->  read by gvim plugin per file
 
 CHIPCRAFT_KEY journey (Server Mode):
   .env (server — teacher access only)
     -> API memory
       -> POST /lab-key (internal network, one-time token, 30s TTL)
-        -> bash variable in tarang2-dp1-key-init.sh
-          -> written to ~/.tarang2-dp1_key (mode 600)  ->  read by gvim plugin per file
+        -> bash variable in tarang2p1-key-init.sh
+          -> written to ~/.tarang2p1_key (mode 600)  ->  read by gvim plugin per file
 
 CLASS_TOKEN (Codespace / Local Docker):
   Visible in student environment.
@@ -1047,15 +1047,15 @@ Decrypted .v files while compiling (simple lab, e.g. counter.v):
 
 Decrypted source for multi-file projects (e.g. tarang2_dp1):
   ~/lab/build/ (tmpfs, RAM only)  ->  decrypted once at startup by
-  tarang2-dp1-decrypt-all.sh  ->  persists for the WHOLE session, not shredded
+  tarang2p1-decrypt-all.sh  ->  persists for the WHOLE session, not shredded
   ->  DELIBERATE TRADEOFF: docker cp / terminal / any filesystem access can
   read this at any time during the session — chosen to remove session-
-  management friction for multi-file build flows. tarang2-dp1-tree (session-
+  management friction for multi-file build flows. tarang2p1-tree (session-
   scoped decrypt/shred) remains available for anyone who wants the narrower
   exposure window instead.
 
 Encrypted .v.enc files:
-  tarang2-dp1-files repo + ~/lab/ volume  ->  safe anywhere  ->  useless without key
+  tarang2p1-files repo + ~/lab/ volume  ->  safe anywhere  ->  useless without key
 
 Git operations:
   /usr/local/bin/git (wrapper) blocks init/clone everywhere

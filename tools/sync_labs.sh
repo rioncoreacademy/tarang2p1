@@ -5,19 +5,19 @@
 #   bash sync_labs.sh <source-folder> <destination-folder>
 #
 # Examples:
-#   bash sync_labs.sh ~/labs/ ~/tarang2-dp1-files/
-#   bash sync_labs.sh /home/user/labs/ /home/user/tarang2-dp1-files/
+#   bash sync_labs.sh ~/labs/ ~/tarang2p1-files/
+#   bash sync_labs.sh /home/user/labs/ /home/user/tarang2p1-files/
 #
 # Result:
 #   Creates a parent folder named after source inside destination:
-#   ~/tarang2-dp1-files/labs/adder.v.enc
-#   ~/tarang2-dp1-files/labs/tb/counter.v.enc
+#   ~/tarang2p1-files/labs/adder.v.enc
+#   ~/tarang2p1-files/labs/tb/counter.v.enc
 
 if [[ -z "${1:-}" || -z "${2:-}" ]]; then
     echo ""
     echo "Usage  : bash sync_labs.sh <source-folder> <destination-folder>"
     echo ""
-    echo "Example: bash sync_labs.sh ~/labs/ ~/tarang2-dp1-files/"
+    echo "Example: bash sync_labs.sh ~/labs/ ~/tarang2p1-files/"
     echo ""
     exit 1
 fi
@@ -37,7 +37,7 @@ fi
 
 if [[ ! -d "$DEST" ]]; then
     echo "ERROR: Destination folder not found: $DEST"
-    echo "Run  : git clone https://github.com/rioncoreacademy/tarang2-dp1-files.git $DEST"
+    echo "Run  : git clone https://github.com/rioncoreacademy/tarang2p1-files.git $DEST"
     exit 1
 fi
 

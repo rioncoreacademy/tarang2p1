@@ -9,7 +9,7 @@
 #   github.com -> Settings -> Developer settings -> Personal access tokens
 #     -> Tokens (classic) -> Generate new token
 #
-# Usage: tarang2-dp1-github-ssh-setup <GITHUB_PERSONAL_TOKEN> [key title]
+# Usage: tarang2p1-github-ssh-setup <GITHUB_PERSONAL_TOKEN> [key title]
 
 set -euo pipefail
 
@@ -18,7 +18,7 @@ TITLE="${2:-Tarang2_dp1 ($(hostname))}"
 KEY_PATH="$HOME/.ssh/id_ed25519"
 
 if [ -z "$TOKEN" ]; then
-    echo "Usage: tarang2-dp1-github-ssh-setup <GITHUB_PERSONAL_TOKEN> [key title]" >&2
+    echo "Usage: tarang2p1-github-ssh-setup <GITHUB_PERSONAL_TOKEN> [key title]" >&2
     echo "" >&2
     echo "Create a token with the 'write:public_key' scope at:" >&2
     echo "  github.com -> Settings -> Developer settings -> Personal access tokens" >&2
@@ -31,7 +31,7 @@ chmod 700 "$HOME/.ssh"
 
 if [ ! -f "$KEY_PATH" ]; then
     echo "[github-ssh-setup] No SSH key found at $KEY_PATH — generating a new ed25519 key..."
-    ssh-keygen -t ed25519 -N "" -f "$KEY_PATH" -C "${GITHUB_USER:-tarang2-dp1-user}@tarang2-dp1" -q
+    ssh-keygen -t ed25519 -N "" -f "$KEY_PATH" -C "${GITHUB_USER:-tarang2p1-user}@tarang2p1" -q
 else
     echo "[github-ssh-setup] Using existing key at $KEY_PATH"
 fi

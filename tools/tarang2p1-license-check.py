@@ -6,8 +6,8 @@ there. Talks to the same license-api that docker-license-test/client/
 license_check.py talks to (identical request/response shape).
 
 Usage:
-    tarang2-dp1-license-check.py activate <license_key> <fingerprint>
-    tarang2-dp1-license-check.py validate <license_key> <fingerprint>
+    tarang2p1-license-check.py activate <license_key> <fingerprint>
+    tarang2p1-license-check.py validate <license_key> <fingerprint>
 
 Exit code 0 + ok:true on success, non-zero otherwise -- entrypoint.sh only
 checks the exit code.
