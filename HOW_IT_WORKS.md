@@ -57,7 +57,7 @@ an environment variable in the container, so `docker inspect` reveals nothing us
 |  |                  | token  |    Makefile                           |   |
 |  |  GitHub OAuth    |        |    mywork/         <- student .v files|   |
 |  +------------------+        |                                       |   |
-|                               |  ~/.tarang2p1_key  (mode 600)         |   |
+|                               |  ~/.rbk_state  (mode 600)         |   |
 |                               |  gvim decrypts *.v.enc in memory      |   |
 |                               |  (no plaintext .v file written)       |   |
 |                               |                                       |   |
@@ -79,10 +79,11 @@ an environment variable in the container, so `docker inspect` reveals nothing us
 | File / Service | Repo | Role |
 |---|---|---|
 | `tools/encrypt_lab.sh` | tarang2p1 | Teacher encrypts `.v` files on their PC |
-| `tools/tarang2p1-key-init.sh` | tarang2p1 | Container — fetches the key once, writes `~/.tarang2p1_key` (mode 600) |
+| `tools/tarang2p1-key-init.sh` | tarang2p1 | Container — fetches the key once, writes `~/.rbk_state` (mode 600) |
 | `tools/tarang2p1-tree.sh` | tarang2p1 | Container — decrypts/shreds a whole subtree on demand (session-scoped alternative; not required for `tarang2_dp1` day to day, see below) |
 | `tools/tarang2p1-decrypt-all.sh` | tarang2p1 | Container — decrypts every `.enc` under `~/lab` into `~/lab/build` once at startup, persists for the whole session (deliberate tradeoff — see "Multi-file projects" below) |
 | `tools/tarang2p1-sweep.sh` | tarang2p1 | Container — background watcher; encrypts `.v` in WORK and syncs to BUILD; encrypts user-created `.v` in BUILD to WORK |
+| `tools/tarang2p1-lockscreen.sh` | tarang2p1 | Container — runs instead of XFCE when `LICENSE_OK=0` (see License Gate below); loops a blocking message, no desktop underneath it |
 | `tools/tarang2p1-refresh-github-ips.sh` | tarang2p1 | Installed as `/usr/local/bin/tarang2p1-refresh-github` — re-fetches GitHub's current IP ranges and allowlists them in the egress firewall on demand, for when `git pull`/`clone`/`push` hangs because GitHub rotated an IP since container start |
 | `tools/tarang2p1-github-ssh-setup.sh` | tarang2p1 | Installed as `/usr/local/bin/tarang2p1-github-ssh-setup` — generates an SSH key if needed and uploads it to the student's own GitHub account via the API (clipboard is blocked, so pasting a key into GitHub's web UI isn't possible from inside the container) |
 | `tools/tarang2p1-vim-wrapper.sh` | tarang2p1 | Installed as `/usr/local/bin/vi`, `vim`, `gvim` — silently redirects `*.v` args to `*.v.enc` so users cannot create raw `.v` files |
@@ -114,7 +115,7 @@ Three ways to run Tarang2_dp1. Choose based on your needs:
 |---|---|---|---|
 | **What runs where** | Student's own Codespace | Student's own laptop/PC | VPS / cloud server |
 | **Cost** | Free (GitHub Codespaces) | Free (Docker Desktop) | ~$4-6/month |
-| **Key hidden from students?** | Yes — via Cloudflare Worker | Yes — key only in Cloudflare | Yes — never in student env |
+| **Key hidden from students?** | Yes — via Cloudflare Worker | Yes — delivered via the license API, tied to the license key (see "License Gate") | Yes — never in student env |
 | **Setup time** | 10 minutes | 10 minutes | 30 minutes |
 | **Best for** | Quick classes, no local installs | Small groups, offline use | Real lab, best security |
 | **Requires internet** | Yes | Only to pull image and fetch key | Yes |
@@ -123,13 +124,17 @@ Three ways to run Tarang2_dp1. Choose based on your needs:
 
 ## License Gate
 
-Optional, opt-in layer separate from the Verilog-encryption system above:
-gates the image itself, and the project folder specifically, behind a license
-key issued by a separate license API (see the `docker-license-test`
-project — `/activate` + `/validate`, fingerprint-locked to one machine via
-`max_activations=1`). Inactive unless `LICENSE_API_BASE_URL` is set for a
-given deployment/image build — existing deployments that don't set it are
-unaffected.
+Layer separate from the Verilog-encryption system above: gates the image
+itself, and the project folder specifically, behind a license key issued by
+a separate license API (see the `docker-license-test` project —
+`/activate` + `/validate`, fingerprint-locked to one machine via
+`max_activations=1`). Only active when `LICENSE_API_BASE_URL` is set on the
+container — this is still opt-in at the `docker run` / entrypoint.sh level
+(Codespace Mode and manual `docker run` without those `-e` flags are
+unaffected). **`Tarang2p1.exe` (the Windows launcher) always sets it**:
+`-licensekey` and `-licenseapi` are required arguments there — see
+`tarang2p1-go/main.go` — so every launch through the `.exe` is gated even
+though the container-level mechanism itself remains conditional.
 
 Checked once at container startup, in `entrypoint.sh`, before anything else:
 
@@ -137,10 +142,13 @@ Checked once at container startup, in `entrypoint.sh`, before anything else:
   No desktop, no VNC, nothing usable. This gates the image itself.
 - **Tier 2 — `LICENSE_KEY` present but invalid for this machine** (wrong or
   shared `LICENSE_FINGERPRINT`, expired, revoked, or the license's single
-  seat is already used by a different machine): the desktop still boots —
-  so the person can see *why* — but `$WORK` (the project folder) is left empty
-  except for a `LICENSE_LOCKED.txt` explaining the problem, and the
-  `CHIPCRAFT_KEY` fetch / decrypt-into-`$BUILD` steps never run either.
+  seat is already used by a different machine): noVNC still connects — so
+  the person can see *why* — but no XFCE session starts. Instead
+  `tarang2p1-lockscreen.sh` loops a message read from `LICENSE_LOCKED.txt`
+  in front of a bare root window: no taskbar, no application launcher, no
+  terminal, nothing to click through to. `$WORK` (the project folder) is
+  left empty except for that `LICENSE_LOCKED.txt`, and the `CHIPCRAFT_KEY`
+  fetch / decrypt-into-`$BUILD` steps never run either.
 
 `LICENSE_FINGERPRINT` is computed on the **host**, the same way
 `CHIPCRAFT_KEY`'s fingerprint concept already works for Windows in
@@ -150,6 +158,17 @@ per-machine ID) — a container can't read the host's hardware IDs itself.
 one license covers the whole deployment: `api/main.py` computes the
 fingerprint once from the server's own machine ID and passes
 `LICENSE_KEY`/`LICENSE_FINGERPRINT` into every container it launches.
+
+**Local Docker Mode's `activate`/`validate` calls also deliver the Verilog
+decryption key.** The license API's response carries `encryption_key` and
+`product_folder` (see `docker-license-test/LICENSING.md`'s "Products"
+section) — `entrypoint.sh` writes the key straight to `~/.rbk_state` and, if
+`product_folder` is set, sparse-checkouts only that subtree of
+`tarang2p1-files` instead of cloning the whole repo. This replaces
+Cloudflare/`CLASS_TOKEN` for this one path only — see "Key Delivery" below
+for how Server Mode and Codespace Mode still get their keys. Server Mode is
+told apart from Local Docker Mode by `BOOTSTRAP_TOKEN` (Server Mode sets it,
+Local Docker Mode never does) even though both set `LICENSE_API_BASE_URL`.
 
 ---
 
@@ -211,18 +230,25 @@ git push
 
 ## Key Delivery — How the Container Gets the Key
 
-The key is delivered via one of four methods, tried in order:
+**Local Docker Mode gets its key from the license API**, not from this
+section's priority list at all — see "License Gate" above.
+`entrypoint.sh` writes `encryption_key` (from the `activate`/`validate`
+response) straight to `~/.rbk_state` and never calls
+`tarang2p1-key-init.sh` for this path.
+
+Every other mode still goes through `tarang2p1-key-init.sh`'s priority
+list, unchanged:
 
 ```
 Priority 1 — Server Mode (API bootstrap token)
   Container calls  POST http://api:8000/lab-key  with BOOTSTRAP_TOKEN
   API validates the one-time token and returns CHIPCRAFT_KEY
 
-Priority 2 — Codespace / Local Docker (Cloudflare Worker)
-  setup.sh or tarang2p1-key-init.sh sends CLASS_TOKEN to Cloudflare Worker
+Priority 2 — Codespace Mode (Cloudflare Worker)
+  setup.sh sends CLASS_TOKEN to Cloudflare Worker
   Worker validates CLASS_TOKEN and returns CHIPCRAFT_KEY
   CHIPCRAFT_KEY is never stored in any environment variable —
-  tarang2p1-key-init.sh writes it straight to ~/.tarang2p1_key (mode 600)
+  tarang2p1-key-init.sh writes it straight to ~/.rbk_state (mode 600)
 
 Priority 3 — Codespace fallback (CHIPCRAFT_KEY direct env var)
   If CHIPCRAFT_KEY is set as a Codespace secret, tarang2p1-key-init.sh reads it
@@ -231,18 +257,32 @@ Priority 4 — Development / testing (LAB_KEY env var)
   If LAB_KEY is set locally, use it for local testing
 ```
 
+`tarang2p1-key-init.sh` itself is unmodified — Local Docker Mode just never
+calls it, so its Cloudflare/CLASS_TOKEN branch (Priority 2) only ever fires
+for Codespace Mode now.
+
+**Operational coupling this creates**: whoever runs `encrypt_lab.sh` for a
+folder and whoever creates/updates the matching `products` row in the
+license API's database must use the *exact same* key — that's one shared
+invariant enforced by two separate systems (a plain AES passphrase in a
+teacher's terminal, and a DB row), with no automated check that they match.
+Get them out of sync and every license pointing at that product suddenly
+can't decrypt its own content.
+
 ---
 
 ## Cloudflare Worker — Hiding the Key
 
-In **Codespace Mode** and **Local Docker Mode**, the key is delivered via a
-free **Cloudflare Worker** instead of a local API server.
+In **Codespace Mode**, the key is delivered via a free **Cloudflare Worker**
+instead of a local API server. (Local Docker Mode used to work this way too
+— it now gets its key from the license API instead, see "License Gate" and
+"Key Delivery" above. This section covers Codespace Mode only.)
 
 ### Why it is needed
 
-In Local Docker Mode, anyone can run `docker inspect <container>` and see all
-environment variables — including secrets passed with `-e`. The Cloudflare
-Worker prevents this by keeping `CHIPCRAFT_KEY` out of the container entirely.
+Anyone can run `docker inspect <container>` and see all environment
+variables — including secrets passed with `-e`. The Cloudflare Worker
+prevents this by keeping `CHIPCRAFT_KEY` out of the container entirely.
 
 ### How it works
 
@@ -327,11 +367,11 @@ export default {
 8. API validates: IP check + not expired + single-use
 
 9. API returns CHIPCRAFT_KEY; tarang2p1-key-init.sh writes it to
-   ~/.tarang2p1_key (mode 600, owned by ubuntu); BOOTSTRAP_TOKEN immediately
+   ~/.rbk_state (mode 600, owned by ubuntu); BOOTSTRAP_TOKEN immediately
    unset from environment
 
 10. Student opens ~/lab/counter.v.enc in gvim. The tarang2p1-crypt.vim plugin
-    reads ~/.tarang2p1_key, pipes the buffer through openssl, embeds the
+    reads ~/.rbk_state, pipes the buffer through openssl, embeds the
     invisible watermark — all inside the editor buffer. No plaintext .v file
     is written to disk.
 
@@ -348,7 +388,7 @@ export default {
 | Copy `.v.enc` file and decrypt | They do not have the key |
 | Read `.env` file | On the server — not inside the container |
 | `docker inspect api` | Requires Docker daemon access — students do not have it |
-| `cat ~/.tarang2p1_key` | **Not blocked** — same Linux user as gvim, so the key is readable by design. The point of this file is keeping the key off `env`/`docker inspect`, not hiding it from the student's own shell — that's structurally impossible once the same user must decrypt their own files. |
+| `cat ~/.rbk_state` | **Not blocked** — same Linux user as gvim, so the key is readable by design. The point of this file is keeping the key off `env`/`docker inspect`, not hiding it from the student's own shell — that's structurally impossible once the same user must decrypt their own files. |
 
 ---
 
@@ -360,13 +400,13 @@ and **compiling** (`make`, which needs a real file for `iverilog` to read).
 ### Editing — gvim, in memory, no plaintext file ever
 
 `tarang2p1-key-init.sh` runs once at container startup and writes the key to
-`~/.tarang2p1_key` (mode 600). The `tarang2p1-crypt.vim` plugin (loaded
+`~/.rbk_state` (mode 600). The `tarang2p1-crypt.vim` plugin (loaded
 system-wide for every user) hooks `*.v.enc` files:
 
 ```
 Student runs:  gvim ~/lab/counter.v.enc
          |
-         |  BufReadCmd fires — plugin reads ~/.tarang2p1_key
+         |  BufReadCmd fires — plugin reads ~/.rbk_state
          |  openssl enc -d -k "$KEY"   (piped straight into the buffer)
          |  watermark.py encode "@github_user"
          v
@@ -393,7 +433,7 @@ smallest possible exposure window:
 ```
 make / make wave / make run FILE=counter
          |
-         |  _decrypt: openssl enc -d -k "$(cat ~/.tarang2p1_key)"
+         |  _decrypt: openssl enc -d -k "$(cat ~/.rbk_state)"
          v
 ~/lab/build/*.v   (tmpfs — exists only for the few seconds iverilog runs)
          |
@@ -714,7 +754,7 @@ postAttachCommand fires (runs AFTER Codespace secrets are injected):
   +-- Runs tarang2p1-key-init.sh:
   |     -> Sends CLASS_TOKEN to Cloudflare Worker
   |     -> Worker validates CLASS_TOKEN, returns CHIPCRAFT_KEY
-  |     -> Writes key to ~/.tarang2p1_key (mode 600) — not kept in env
+  |     -> Writes key to ~/.rbk_state (mode 600) — not kept in env
   |
   +-- gvim now decrypts/encrypts *.v.enc files transparently, in memory
 ```
@@ -724,26 +764,34 @@ postAttachCommand fires (runs AFTER Codespace secrets are injected):
 
 ### Local Docker Mode
 
+Normally driven by `Tarang2p1.exe` (see `tarang2p1-go/`), which computes the
+fingerprint and always sets `LICENSE_KEY`/`LICENSE_FINGERPRINT`/
+`LICENSE_API_BASE_URL` for you — a license is mandatory in the launcher, not
+opt-in. The manual `docker run` below is the same thing done by hand:
+
 ```bash
 docker stop tarang2p1 && docker rm tarang2p1
 docker pull ghcr.io/rioncoreacademy/tarang2p1:v1.1
 
-# Only needed if this image build is license-gated (LICENSE_API_BASE_URL set
-# at build/deploy time) — see "License Gate" below. Must run on the HOST.
+# Must run on the HOST — a container can't read the host's hardware IDs.
 FP=$(bash tools/get-fingerprint.sh)
 
 docker run -d \
   --name tarang2p1 \
   --cap-add=NET_ADMIN \
   -p 6080:6080 \
-  -e CLASS_TOKEN=vlsi2026 \
   -e GITHUB_USER=your_github_name \
   -e LICENSE_KEY=your-license-key \
   -e LICENSE_FINGERPRINT=$FP \
+  -e LICENSE_API_BASE_URL=https://license-api.yourdomain.com \
   --tmpfs /workspaces/projects/build:size=2g,uid=1000,gid=1000,mode=0700 \
   ghcr.io/rioncoreacademy/tarang2p1:v1.1
 # Open http://localhost:6080 in your browser
 ```
+
+No `CLASS_TOKEN` here — this path gets its decryption key from the license
+API's `activate`/`validate` response instead (see "License Gate" above),
+not Cloudflare.
 
 - `--cap-add=NET_ADMIN` is required for the egress firewall (iptables inside the container)
 - `--tmpfs /workspaces/projects/build` mounts the decrypted-files directory as RAM-only
@@ -760,12 +808,13 @@ be a normal directory on the container's writable disk layer instead of
 RAM-only, the same way it already is in Server Mode.
 
 `entrypoint.sh` clones `tarang2p1-files` into `~/lab` automatically on
-first start (only when `BOOTSTRAP_TOKEN` isn't set, i.e. not Server Mode) —
-no manual clone step needed. `CLASS_TOKEN` is already present at container
-start (passed via `-e`), so the key fetch succeeds immediately, unlike
-Codespace Mode where it has to wait for `postAttachCommand`.
-
-The container fetches the key from the Cloudflare Worker using CLASS_TOKEN.
+first start (only when `BOOTSTRAP_TOKEN` isn't set, i.e. not Server Mode;
+sparse-checkout scoped to just `LICENSE_PRODUCT_FOLDER` when the license is
+scoped to a product) — no manual clone step needed. `LICENSE_KEY`/
+`LICENSE_FINGERPRINT`/`LICENSE_API_BASE_URL` are already present at
+container start (passed via `-e`), so the license check and key delivery
+both succeed immediately, unlike Codespace Mode where the equivalent
+(`CLASS_TOKEN`) has to wait for `postAttachCommand`.
 
 ### Edit (all modes)
 
@@ -929,7 +978,7 @@ cd tarang2p1-files && git add *.v.enc && git commit -m "lab1" && git push
     (ALL files here are read-only, 444. Dirs readable+executable, not writable)
 
 /home/ubuntu/
-+-- .tarang2p1_key              <- decryption key, mode 600 (read by gvim plugin)
++-- .rbk_state              <- decryption key, mode 600 (read by gvim plugin)
 ```
 
 **Paths available as environment variables in every script and the vim plugin:**
@@ -951,15 +1000,15 @@ BUILD=/workspaces/projects/build        # decrypted read-only copies (tmpfs)
 | **git clone** to push to a private repo | Blocked | git wrapper blocks `git clone` everywhere |
 | **curl / wget** to paste sites | Blocked | Egress firewall — only GitHub IPs allowed |
 | **Browser inside VNC** to Google Drive, email | Blocked | Egress firewall |
-| **`docker inspect`** to see CHIPCRAFT_KEY | Not possible | Key delivered via Cloudflare Worker — never an env var in the container |
-| **`echo $CLASS_TOKEN`** | Visible | CLASS_TOKEN is a door pass, not the key — harmless |
+| **`docker inspect`** to see the decryption key | Not possible | Never an env var in the container — Codespace Mode fetches it from the Cloudflare Worker, Local Docker Mode from the license API's `activate`/`validate` response; either way it only ever lands in `~/.rbk_state` |
+| **`echo $CLASS_TOKEN`** (Codespace Mode) | Visible | CLASS_TOKEN is a door pass, not the key — harmless |
 | **`docker cp ~/lab/*.enc`** | Blocked | Ciphertext only — useless without the key |
 | **`docker cp ~/lab/build/counter.v`** (simple lab, via `make`) | Blocked (almost always) | No plaintext `.v` file exists there except for the few seconds a `make` is actively compiling |
 | **`docker cp ~/lab/build/tarang2_dp1/...`** (multi-file projects) | **Not blocked — by design** | `tarang2p1-decrypt-all.sh` decrypts this persistently for the whole session (deliberate tradeoff, see "Multi-file projects" above). Real plaintext source, readable at any time. |
 | **`vi test.v`** / **`gvim test.v`** | Blocked | `vi`/`vim`/`gvim` are wrappers — redirect `*.v` args to `*.v.enc`. No `.v` file is ever created. |
 | **`touch test.v`** in WORK or BUILD | Blocked (within seconds) | `tarang2p1-sweep.sh` detects it and encrypts (WORK) or encrypts+locks (BUILD) |
 | **`cp`/`mv`/`docker cp` dropping `.v` into WORK or BUILD** | Blocked (within seconds) | Sweep auto-encrypts to WORK, leaves read-only copy in BUILD |
-| **`cat ~/.tarang2p1_key`** | Not possible to block | Same Linux user as gvim — see note in the key-delivery table above |
+| **`cat ~/.rbk_state`** | Not possible to block | Same Linux user as gvim — see note in the key-delivery table above |
 | **Phone photo / screen recording** | Cannot block | Watermark identifies the student |
 | **Manual typing** the code | Cannot block | Watermark + academic integrity policy |
 
@@ -1018,20 +1067,28 @@ BLOCKED outbound:
 ## Security Summary
 
 ```
-CHIPCRAFT_KEY journey (Codespace / Local Docker):
+CHIPCRAFT_KEY journey (Codespace Mode):
   Cloudflare Worker secrets (teacher access only)
     -> POST /worker (CLASS_TOKEN validated, CHIPCRAFT_KEY returned in response)
       -> bash variable in tarang2p1-key-init.sh (~2 seconds)
-        -> written to ~/.tarang2p1_key (mode 600)  ->  read by gvim plugin per file
+        -> written to ~/.rbk_state (mode 600)  ->  read by gvim plugin per file
 
 CHIPCRAFT_KEY journey (Server Mode):
   .env (server — teacher access only)
     -> API memory
       -> POST /lab-key (internal network, one-time token, 30s TTL)
         -> bash variable in tarang2p1-key-init.sh
-          -> written to ~/.tarang2p1_key (mode 600)  ->  read by gvim plugin per file
+          -> written to ~/.rbk_state (mode 600)  ->  read by gvim plugin per file
 
-CLASS_TOKEN (Codespace / Local Docker):
+Decryption key journey (Local Docker Mode):
+  products.encryption_key / DEFAULT_ENCRYPTION_KEY (license-api DB/env, admin access only)
+    -> returned in the SAME /activate + /validate calls entrypoint.sh already
+       makes for the license gate — no separate request, no Cloudflare
+      -> bash variable in entrypoint.sh
+        -> written to ~/.rbk_state (mode 600) directly  ->  read by gvim plugin per file
+  tarang2p1-key-init.sh and CLASS_TOKEN are never touched on this path.
+
+CLASS_TOKEN (Codespace Mode only):
   Visible in student environment.
   It is a door pass, not the encryption key.
   Students can see it but cannot use it to obtain CHIPCRAFT_KEY directly.

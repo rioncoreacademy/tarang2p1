@@ -22,16 +22,52 @@ fi
 # fingerprint, expired, revoked, seat already used elsewhere) -> the
 # desktop still boots so the person can see why, but the project folder
 # itself stays locked instead of being populated.
+#
+# Local Docker Mode (Tarang2p1.exe) is distinguished from Server Mode by
+# BOOTSTRAP_TOKEN: Server Mode sets LICENSE_API_BASE_URL/LICENSE_KEY too
+# (one shared license for the whole deployment, see api/main.py) but
+# delivers the Verilog decryption key its own way (BOOTSTRAP_TOKEN ->
+# /lab-key), not through this license check. Only Local Docker Mode's own
+# license (no BOOTSTRAP_TOKEN) gets its decryption key from THIS call --
+# see the key-delivery block near the bottom of this file.
 LICENSE_OK=1
+LICENSE_ENCRYPTION_KEY=""
+LICENSE_PRODUCT_FOLDER=""
+IS_LOCAL_DOCKER_LICENSE_PATH=0
+[[ -n "${LICENSE_API_BASE_URL:-}" && -z "${BOOTSTRAP_TOKEN:-}" ]] && IS_LOCAL_DOCKER_LICENSE_PATH=1
+
 if [[ -n "${LICENSE_API_BASE_URL:-}" ]]; then
     if [[ -z "${LICENSE_FINGERPRINT:-}" ]]; then
         LICENSE_OK=0
-    elif ! python3 /usr/local/bin/tarang2p1-license-check.py activate "$LICENSE_KEY" "$LICENSE_FINGERPRINT" \
-            >> /tmp/lab-crypto.log 2>&1 \
-      || ! python3 /usr/local/bin/tarang2p1-license-check.py validate "$LICENSE_KEY" "$LICENSE_FINGERPRINT" \
-            >> /tmp/lab-crypto.log 2>&1; then
-        LICENSE_OK=0
+    else
+        ACT_OUT=$(python3 /usr/local/bin/tarang2p1-license-check.py activate "$LICENSE_KEY" "$LICENSE_FINGERPRINT" 2>>/tmp/lab-crypto.log)
+        ACT_RC=$?
+        VAL_OUT=$(python3 /usr/local/bin/tarang2p1-license-check.py validate "$LICENSE_KEY" "$LICENSE_FINGERPRINT" 2>>/tmp/lab-crypto.log)
+        VAL_RC=$?
+        printf '%s\n%s\n' "$ACT_OUT" "$VAL_OUT" >> /tmp/lab-crypto.log
+        if [[ $ACT_RC -ne 0 || $VAL_RC -ne 0 ]]; then
+            LICENSE_OK=0
+        else
+            # validate's response now also carries encryption_key/product_folder
+            # (see docker-license-test's LicenseController::resolveProductFields) --
+            # parse them out of the same call instead of a separate request.
+            IFS=$'\t' read -r LICENSE_ENCRYPTION_KEY LICENSE_PRODUCT_FOLDER < <(printf '%s' "$VAL_OUT" | python3 -c '
+import sys, json
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    d = {}
+print(f"{d.get(\"encryption_key\", \"\")}\t{d.get(\"product_folder\", \"\")}")')
+        fi
     fi
+fi
+
+# Fail closed, not open: a "valid" license with no key (misconfigured
+# DEFAULT_ENCRYPTION_KEY server-side) must lock the folder, not silently
+# proceed with no decryption key at all.
+if [[ "$IS_LOCAL_DOCKER_LICENSE_PATH" == "1" && "$LICENSE_OK" == "1" && -z "$LICENSE_ENCRYPTION_KEY" ]]; then
+    LICENSE_OK=0
+    echo "[license] WARNING: license valid but API returned no encryption_key — locking as a safety measure." >> /tmp/lab-crypto.log
 fi
 export LICENSE_OK
 # ─────────────────────────────────────────────────────────────────────────────
@@ -48,6 +84,46 @@ key only works on one machine. Contact your instructor/license holder.
 EOF
     chmod 555 "$WORK"
     echo "[license] Project folder locked — no valid license for this machine." >> /tmp/lab-crypto.log
+elif [[ -z "${BOOTSTRAP_TOKEN:-}" && -n "$LICENSE_PRODUCT_FOLDER" && ! -d "$WORK/.git" ]]; then
+    # Local Docker Mode license scoped to one product/folder — sparse-checkout
+    # only that subtree (+ mywork/) instead of the whole repo. A plain `mv` of
+    # just the subfolder would discard .git (it lives at the clone root),
+    # breaking the documented `git add/commit/push` workflow — sparse-checkout
+    # keeps a real working tree while still only fetching the scoped content.
+    # --cone mode keeps root-level infra files (Makefile, .gitignore) present
+    # automatically alongside whatever's listed in `sparse-checkout set`.
+    echo "[projects] Cloning tarang2p1-files -> $WORK (scoped to '$LICENSE_PRODUCT_FOLDER') …" >> /tmp/lab-crypto.log
+    TMPCLONE=$(mktemp -d)
+    if /usr/bin/git clone --no-checkout https://github.com/rioncoreacademy/tarang2p1-files.git "$TMPCLONE" \
+            >> /tmp/lab-crypto.log 2>&1 \
+        && ( cd "$TMPCLONE" \
+             && git sparse-checkout init --cone \
+             && git sparse-checkout set "$LICENSE_PRODUCT_FOLDER" mywork \
+             && git checkout ) >> /tmp/lab-crypto.log 2>&1; then
+        if [[ -d "$TMPCLONE/$LICENSE_PRODUCT_FOLDER" ]]; then
+            mkdir -p "$WORK"
+            shopt -s dotglob
+            mv "$TMPCLONE"/* "$WORK"/ 2>>/tmp/lab-crypto.log
+            shopt -u dotglob
+            rmdir "$TMPCLONE" 2>/dev/null
+            echo "[projects] Clone complete (scoped to '$LICENSE_PRODUCT_FOLDER')." >> /tmp/lab-crypto.log
+            find "$WORK" -type f -exec chmod a-w {} \; 2>/dev/null || true
+        else
+            rm -rf "$TMPCLONE"
+            mkdir -p "$WORK"
+            cat > "$WORK/LICENSE_LOCKED.txt" <<EOF
+This license is scoped to a project folder ("$LICENSE_PRODUCT_FOLDER") that
+could not be found in the lab content repository. Contact your
+instructor/license holder — this is a content configuration issue, not a
+problem with your license itself.
+EOF
+            chmod 555 "$WORK"
+            echo "[projects] WARNING: product_folder '$LICENSE_PRODUCT_FOLDER' not found in repo — locked." >> /tmp/lab-crypto.log
+        fi
+    else
+        echo "[projects] WARNING: could not clone/sparse-checkout tarang2p1-files." >> /tmp/lab-crypto.log
+        rm -rf "$TMPCLONE"
+    fi
 elif [[ -z "${BOOTSTRAP_TOKEN:-}" && ! -d "$WORK/.git" ]]; then
     echo "[projects] Cloning tarang2p1-files -> $WORK …" >> /tmp/lab-crypto.log
     # Clone into a temp dir then merge — cloning directly into $WORK fails
@@ -213,9 +289,19 @@ for i in $(seq 1 15); do
     sleep 1
 done
 
-# Start XFCE desktop session on display :1
-DISPLAY=:1 XDG_RUNTIME_DIR=/tmp/runtime-ubuntu \
-    dbus-launch --exit-with-session startxfce4 >> /tmp/xfce.log 2>&1 &
+# Start the desktop session on display :1 — only a real XFCE session when
+# the license gate above passed. An invalid/missing license still gets a
+# VNC connection (so the person can see why), but no desktop: no taskbar,
+# no launcher, no terminal, just the lock message from tarang2p1-lockscreen.sh
+# looping in front of a bare root window. This is what actually keeps a
+# locked-out machine out, on top of the project-folder lock above.
+if [[ "$LICENSE_OK" == "1" ]]; then
+    DISPLAY=:1 XDG_RUNTIME_DIR=/tmp/runtime-ubuntu \
+        dbus-launch --exit-with-session startxfce4 >> /tmp/xfce.log 2>&1 &
+else
+    DISPLAY=:1 XDG_RUNTIME_DIR=/tmp/runtime-ubuntu \
+        /usr/local/bin/tarang2p1-lockscreen.sh >> /tmp/xfce.log 2>&1 &
+fi
 
 # xfdesktop's backdrop properties are keyed by the actual RandR-detected
 # monitor name (confirmed to be "monitorVNC-0" for TigerVNC, not "monitor0"
@@ -226,6 +312,9 @@ DISPLAY=:1 XDG_RUNTIME_DIR=/tmp/runtime-ubuntu \
 # would be satisfied immediately, before xfdesktop has even registered its
 # real "monitorVNC-0" entries — re-scan and re-apply repeatedly instead so
 # whatever shows up late (or on more workspaces) still gets caught.
+# Skipped entirely when locked out — xfdesktop isn't running, so there are
+# no backdrop properties to ever find.
+if [[ "$LICENSE_OK" == "1" ]]; then
 (
     export DISPLAY=:1 XDG_RUNTIME_DIR=/tmp/runtime-ubuntu
     for i in $(seq 1 20); do
@@ -240,6 +329,7 @@ DISPLAY=:1 XDG_RUNTIME_DIR=/tmp/runtime-ubuntu \
         done <<< "$props"
     done
 ) >> /tmp/xfce.log 2>&1 &
+fi
 
 # Wait for VNC to be ready
 for i in $(seq 1 15); do
@@ -269,9 +359,23 @@ if [[ "$LICENSE_OK" == "1" ]]; then
 # happens inside gvim, in memory, when a student opens any *.enc file — no
 # plaintext file is ever written to disk (see tools/tarang2p1-crypt.vim).
 # Logs go to /tmp/lab-crypto.log — visible to root, not ubuntu, for debugging.
-# Default CLASS_TOKEN so key fetch works at container start without setup.sh.
-export CLASS_TOKEN="${CLASS_TOKEN:-vlsi2026}"
-/usr/local/bin/tarang2p1-key-init.sh >> /tmp/lab-crypto.log 2>&1 &
+#
+# Local Docker Mode license (no BOOTSTRAP_TOKEN) already got its key from
+# the license API's activate/validate response above — write it straight to
+# ~/.rbk_state and skip tarang2p1-key-init.sh (and CLASS_TOKEN/Cloudflare)
+# entirely for this path. Every other mode (Codespace, Server, dev) is
+# unaffected — key-init.sh runs exactly as it always has, CLASS_TOKEN still
+# defaults to vlsi2026 for Codespace Mode's Cloudflare Worker fetch.
+if [[ "$IS_LOCAL_DOCKER_LICENSE_PATH" == "1" ]]; then
+    umask 077
+    printf '%s\n' "$LICENSE_ENCRYPTION_KEY" > "$HOME/.rbk_state"
+    chmod 600 "$HOME/.rbk_state"
+    echo "[license] Decryption key delivered via license API (product_folder='${LICENSE_PRODUCT_FOLDER}')." >> /tmp/lab-crypto.log
+else
+    export CLASS_TOKEN="${CLASS_TOKEN:-vlsi2026}"
+    /usr/local/bin/tarang2p1-key-init.sh >> /tmp/lab-crypto.log 2>&1 &
+fi
+unset LICENSE_ENCRYPTION_KEY
 
 # Watch $WORK for stray plaintext appearing by any means other than gvim —
 # cp, mv, docker cp, anything. tarang2p1-crypt.vim only sees Vim's own

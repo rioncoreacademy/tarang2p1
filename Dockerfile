@@ -32,6 +32,8 @@ RUN apt-get update \
         xfonts-100dpi \
         xfonts-75dpi \
         x11-xserver-utils \
+        # xmessage (license lock screen shown when LICENSE_OK=0)
+        x11-utils \
         dbus-x11 \
         ca-certificates \
         curl \
@@ -160,6 +162,7 @@ COPY tools/tarang2p1-sweep.sh     /usr/local/bin/tarang2p1-sweep.sh
 COPY tools/tarang2p1-refresh-github-ips.sh /usr/local/bin/tarang2p1-refresh-github
 COPY tools/tarang2p1-github-ssh-setup.sh /usr/local/bin/tarang2p1-github-ssh-setup
 COPY tools/tarang2p1-license-check.py /usr/local/bin/tarang2p1-license-check.py
+COPY tools/tarang2p1-lockscreen.sh  /usr/local/bin/tarang2p1-lockscreen.sh
 COPY tools/watermark.py           /usr/local/bin/watermark.py
 COPY tools/git-wrapper.sh         /usr/local/bin/git
 COPY tools/tarang2p1-vim-wrapper.sh /usr/local/bin/tarang2p1-vim-wrapper.sh
@@ -175,6 +178,7 @@ RUN chmod +x /usr/local/bin/tarang2p1-key-init.sh \
              /usr/local/bin/tarang2p1-sweep.sh \
              /usr/local/bin/tarang2p1-github-ssh-setup \
              /usr/local/bin/tarang2p1-license-check.py \
+             /usr/local/bin/tarang2p1-lockscreen.sh \
              /usr/local/bin/watermark.py \
              /usr/local/bin/git \
              /usr/local/bin/tarang2p1-vim-wrapper.sh \
