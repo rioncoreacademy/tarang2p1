@@ -510,7 +510,14 @@ if [[ "$IS_LOCAL_DOCKER_LICENSE_PATH" == "1" ]]; then
           REVAL_REASON=$(_extract_error "$REVAL_OUT")
           if [[ "$REVAL_REASON" != unreachable* ]]; then
               echo "[license] Re-validation failed mid-session (reason: $REVAL_REASON) — locking desktop." >> /tmp/lab-crypto.log
-              pkill -u ubuntu xfce4-session 2>/dev/null || true
+              # Killing xfce4-session alone does NOT cascade to the actual
+              # desktop components it launched -- xfwm4 (window manager),
+              # xfdesktop, xfce4-panel, Thunar, and xfsettingsd all keep
+              # running independently once started, fully interactive.
+              # Confirmed by testing: a customer would just see the lock
+              # message as an extra popup on top of a completely usable
+              # desktop they could click past. Kill all of them by name.
+              pkill -9 -u ubuntu -f 'xfwm4|xfdesktop|xfce4-panel|Thunar|xfsettingsd|xfce4-session' 2>/dev/null || true
               cat > "$WORK/LICENSE_LOCKED.txt" <<EOF
 This project folder is locked: your license is no longer valid
 (reason: $REVAL_REASON). Contact RionCore Academy support.
