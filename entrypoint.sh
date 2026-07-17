@@ -33,20 +33,41 @@ fi
 LICENSE_OK=1
 LICENSE_ENCRYPTION_KEY=""
 LICENSE_PRODUCT_FOLDER=""
+# Machine-readable reason the lock screen/LICENSE_LOCKED.txt map to a
+# specific human message below -- see the case statement in the "Clone
+# project files" block. Matches the license API's own `error` values
+# (license_expired, license_revoked, etc.) plus a few local-only reasons.
+LICENSE_ERROR_REASON=""
 IS_LOCAL_DOCKER_LICENSE_PATH=0
 [[ -n "${LICENSE_API_BASE_URL:-}" && -z "${BOOTSTRAP_TOKEN:-}" ]] && IS_LOCAL_DOCKER_LICENSE_PATH=1
+
+_extract_error() {
+    # $1 = raw JSON response from tarang2p1-license-check.py
+    printf '%s' "$1" | python3 -c '
+import sys, json
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    d = {}
+print(d.get("error", "unreachable"))'
+}
 
 if [[ -n "${LICENSE_API_BASE_URL:-}" ]]; then
     if [[ -z "${LICENSE_FINGERPRINT:-}" ]]; then
         LICENSE_OK=0
+        LICENSE_ERROR_REASON="no_fingerprint"
     else
         ACT_OUT=$(python3 /usr/local/bin/tarang2p1-license-check.py activate "$LICENSE_KEY" "$LICENSE_FINGERPRINT" 2>>/tmp/lab-crypto.log)
         ACT_RC=$?
         VAL_OUT=$(python3 /usr/local/bin/tarang2p1-license-check.py validate "$LICENSE_KEY" "$LICENSE_FINGERPRINT" 2>>/tmp/lab-crypto.log)
         VAL_RC=$?
         printf '%s\n%s\n' "$ACT_OUT" "$VAL_OUT" >> /tmp/lab-crypto.log
-        if [[ $ACT_RC -ne 0 || $VAL_RC -ne 0 ]]; then
+        if [[ $ACT_RC -ne 0 ]]; then
             LICENSE_OK=0
+            LICENSE_ERROR_REASON=$(_extract_error "$ACT_OUT")
+        elif [[ $VAL_RC -ne 0 ]]; then
+            LICENSE_OK=0
+            LICENSE_ERROR_REASON=$(_extract_error "$VAL_OUT")
         else
             # validate's response now also carries encryption_key/product_folder
             # (see docker-license-test's LicenseController::resolveProductFields) --
@@ -67,6 +88,7 @@ fi
 # proceed with no decryption key at all.
 if [[ "$IS_LOCAL_DOCKER_LICENSE_PATH" == "1" && "$LICENSE_OK" == "1" && -z "$LICENSE_ENCRYPTION_KEY" ]]; then
     LICENSE_OK=0
+    LICENSE_ERROR_REASON="no_encryption_key"
     echo "[license] WARNING: license valid but API returned no encryption_key — locking as a safety measure." >> /tmp/lab-crypto.log
 fi
 export LICENSE_OK
@@ -77,13 +99,27 @@ export LICENSE_OK
 # student's own fork shortly after startup (see api/main.py _clone_repo()).
 if [[ "$LICENSE_OK" != "1" ]]; then
     mkdir -p "$WORK"
-    cat > "$WORK/LICENSE_LOCKED.txt" <<'EOF'
-This project folder is locked: no valid license was found for this machine.
-This license key may already be activated on a different computer — each
-key only works on one machine. Contact your instructor/license holder.
-EOF
+    case "$LICENSE_ERROR_REASON" in
+        license_expired)
+            LOCK_REASON_MSG="Your license has expired. Contact RionCore Academy support to renew." ;;
+        license_revoked)
+            LOCK_REASON_MSG="This license has been revoked. Contact RionCore Academy support." ;;
+        license_not_found)
+            LOCK_REASON_MSG="No license was found with this key. Contact RionCore Academy support." ;;
+        machine_not_activated|activation_limit_reached)
+            LOCK_REASON_MSG="This license is already activated on a different machine - each key only works on one. Contact RionCore Academy support." ;;
+        no_fingerprint)
+            LOCK_REASON_MSG="This machine's fingerprint could not be determined. Contact RionCore Academy support." ;;
+        no_encryption_key)
+            LOCK_REASON_MSG="Your license is valid, but the lab content could not be prepared right now. Contact RionCore Academy support." ;;
+        unreachable*)
+            LOCK_REASON_MSG="Could not reach the license server to verify this license. Check your internet connection, or contact RionCore Academy support if this continues." ;;
+        *)
+            LOCK_REASON_MSG="No valid license was found for this machine. Contact RionCore Academy support." ;;
+    esac
+    printf 'This project folder is locked: %s\n' "$LOCK_REASON_MSG" > "$WORK/LICENSE_LOCKED.txt"
     chmod 555 "$WORK"
-    echo "[license] Project folder locked — no valid license for this machine." >> /tmp/lab-crypto.log
+    echo "[license] Project folder locked (reason: ${LICENSE_ERROR_REASON:-unknown}) — no valid license for this machine." >> /tmp/lab-crypto.log
 elif [[ -z "${BOOTSTRAP_TOKEN:-}" && -n "$LICENSE_PRODUCT_FOLDER" && ! -d "$WORK/.git" ]]; then
     # Local Docker Mode license scoped to one product/folder — sparse-checkout
     # only that subtree (+ mywork/) instead of the whole repo. A plain `mv` of
@@ -113,9 +149,9 @@ elif [[ -z "${BOOTSTRAP_TOKEN:-}" && -n "$LICENSE_PRODUCT_FOLDER" && ! -d "$WORK
             mkdir -p "$WORK"
             cat > "$WORK/LICENSE_LOCKED.txt" <<EOF
 This license is scoped to a project folder ("$LICENSE_PRODUCT_FOLDER") that
-could not be found in the lab content repository. Contact your
-instructor/license holder — this is a content configuration issue, not a
-problem with your license itself.
+could not be found in the lab content repository. Contact RionCore Academy
+support - this is a content configuration issue, not a problem with your
+license itself.
 EOF
             chmod 555 "$WORK"
             echo "[projects] WARNING: product_folder '$LICENSE_PRODUCT_FOLDER' not found in repo — locked." >> /tmp/lab-crypto.log

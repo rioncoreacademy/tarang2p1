@@ -14,7 +14,7 @@ while true; do
     if [[ -f "$MSG_FILE" ]]; then
         xmessage -center -file "$MSG_FILE" 2>/dev/null
     else
-        xmessage -center "No valid license was found for this machine. Contact your instructor/license holder." 2>/dev/null
+        xmessage -center "No valid license was found for this machine. Contact RionCore Academy support." 2>/dev/null
     fi
     sleep 1
 done
