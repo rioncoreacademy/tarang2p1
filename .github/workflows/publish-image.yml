@@ -10,16 +10,19 @@ on:
       - entrypoint.sh
       - tarang2p1-run.sh
       - novnc-index.html
-      - tools/tarang2p1-key-init.sh
-      - tools/tarang2p1-tree.sh
-      - tools/tarang2p1-decrypt-all.sh
-      - tools/tarang2p1-sweep.sh
-      - tools/tarang2p1-crypt.vim
-      - tools/tarang2p1-vim-wrapper.sh
-      - tools/tarang2p1-refresh-github-ips.sh
-      - tools/tarang2p1-github-ssh-setup.sh
-      - tools/tarang2p1-license-check.py
       - novnc-rebrand.js
+      # Glob instead of an explicit per-file list -- the previous list
+      # (individual tools/*.sh entries) silently missed several files the
+      # Dockerfile actually COPYs in (watermark.py, git-wrapper.sh,
+      # pre-commit, tarang2p1-gitignore, tarang2p1-lockscreen.sh), and the
+      # background/font assets weren't watched at all. Globbing the whole
+      # tools/ dir plus the asset extensions the Dockerfile COPYs means new
+      # files added later are covered automatically instead of needing this
+      # list updated every time.
+      - tools/**
+      - "*.png"
+      - "*.ttf"
+  workflow_dispatch: {}
 
 jobs:
   build-and-push:
