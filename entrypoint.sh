@@ -32,7 +32,9 @@ fi
 # see the key-delivery block near the bottom of this file.
 LICENSE_OK=1
 LICENSE_ENCRYPTION_KEY=""
-LICENSE_PRODUCT_FOLDER=""
+# A product can now bundle multiple folders (all sharing the one
+# encryption_key above) -- see docker-license-test's product_folders table.
+LICENSE_PRODUCT_FOLDERS=()
 # Machine-readable reason the lock screen/LICENSE_LOCKED.txt map to a
 # specific human message below -- see the case statement in the "Clone
 # project files" block. Matches the license API's own `error` values
@@ -69,16 +71,21 @@ if [[ -n "${LICENSE_API_BASE_URL:-}" ]]; then
             LICENSE_OK=0
             LICENSE_ERROR_REASON=$(_extract_error "$VAL_OUT")
         else
-            # validate's response now also carries encryption_key/product_folder
+            # validate's response now also carries encryption_key/product_folders
             # (see docker-license-test's LicenseController::resolveProductFields) --
             # parse them out of the same call instead of a separate request.
-            IFS=$'\t' read -r LICENSE_ENCRYPTION_KEY LICENSE_PRODUCT_FOLDER < <(printf '%s' "$VAL_OUT" | python3 -c '
+            # Line 1 = encryption_key, remaining lines (if any) = folder paths.
+            mapfile -t _LICENSE_RESP_LINES < <(printf '%s' "$VAL_OUT" | python3 -c '
 import sys, json
 try:
     d = json.load(sys.stdin)
 except Exception:
     d = {}
-print(d.get("encryption_key", "") + "\t" + d.get("product_folder", ""))')
+print(d.get("encryption_key", ""))
+for f in d.get("product_folders", []):
+    print(f)')
+            LICENSE_ENCRYPTION_KEY="${_LICENSE_RESP_LINES[0]:-}"
+            LICENSE_PRODUCT_FOLDERS=("${_LICENSE_RESP_LINES[@]:1}")
         fi
     fi
 fi
@@ -99,62 +106,72 @@ export LICENSE_OK
 # student's own fork shortly after startup (see api/main.py _clone_repo()).
 if [[ "$LICENSE_OK" != "1" ]]; then
     mkdir -p "$WORK"
+    # Explicit line breaks (~60 cols) rather than one long line -- xmessage
+    # (tarang2p1-lockscreen.sh) doesn't auto-wrap, so a single long line just
+    # runs off the edge of the message box instead of wrapping.
     case "$LICENSE_ERROR_REASON" in
         license_expired)
-            LOCK_REASON_MSG="Your license has expired. Contact RionCore Academy support to renew." ;;
+            LOCK_REASON_MSG=$'This project folder is locked: your license has\nexpired. Contact RionCore Academy support to renew.' ;;
         license_revoked)
-            LOCK_REASON_MSG="This license has been revoked. Contact RionCore Academy support." ;;
+            LOCK_REASON_MSG=$'This project folder is locked: this license has\nbeen revoked. Contact RionCore Academy support.' ;;
         license_not_found)
-            LOCK_REASON_MSG="No license was found with this key. Contact RionCore Academy support." ;;
+            LOCK_REASON_MSG=$'This project folder is locked: no license was\nfound with this key. Contact RionCore Academy\nsupport.' ;;
         machine_not_activated|activation_limit_reached)
-            LOCK_REASON_MSG="This license is already activated on a different machine - each key only works on one. Contact RionCore Academy support." ;;
+            LOCK_REASON_MSG=$'This project folder is locked: this license is\nalready activated on a different machine - each\nkey only works on one. Contact RionCore Academy\nsupport.' ;;
         no_fingerprint)
-            LOCK_REASON_MSG="This machine's fingerprint could not be determined. Contact RionCore Academy support." ;;
+            LOCK_REASON_MSG=$'This project folder is locked: this machine\'s\nfingerprint could not be determined. Contact\nRionCore Academy support.' ;;
         no_encryption_key)
-            LOCK_REASON_MSG="Your license is valid, but the lab content could not be prepared right now. Contact RionCore Academy support." ;;
+            LOCK_REASON_MSG=$'This project folder is locked: your license is\nvalid, but the lab content could not be prepared\nright now. Contact RionCore Academy support.' ;;
         unreachable*)
-            LOCK_REASON_MSG="Could not reach the license server to verify this license. Check your internet connection, or contact RionCore Academy support if this continues." ;;
+            LOCK_REASON_MSG=$'This project folder is locked: could not reach\nthe license server to verify this license. Check\nyour internet connection, or contact RionCore\nAcademy support if this continues.' ;;
         *)
-            LOCK_REASON_MSG="No valid license was found for this machine. Contact RionCore Academy support." ;;
+            LOCK_REASON_MSG=$'This project folder is locked: no valid license\nwas found for this machine. Contact RionCore\nAcademy support.' ;;
     esac
-    printf 'This project folder is locked: %s\n' "$LOCK_REASON_MSG" > "$WORK/LICENSE_LOCKED.txt"
+    printf '%s\n' "$LOCK_REASON_MSG" > "$WORK/LICENSE_LOCKED.txt"
     chmod 555 "$WORK"
     echo "[license] Project folder locked (reason: ${LICENSE_ERROR_REASON:-unknown}) — no valid license for this machine." >> /tmp/lab-crypto.log
-elif [[ -z "${BOOTSTRAP_TOKEN:-}" && -n "$LICENSE_PRODUCT_FOLDER" && ! -d "$WORK/.git" ]]; then
-    # Local Docker Mode license scoped to one product/folder — sparse-checkout
-    # only that subtree (+ mywork/) instead of the whole repo. A plain `mv` of
-    # just the subfolder would discard .git (it lives at the clone root),
-    # breaking the documented `git add/commit/push` workflow — sparse-checkout
-    # keeps a real working tree while still only fetching the scoped content.
-    # --cone mode keeps root-level infra files (Makefile, .gitignore) present
-    # automatically alongside whatever's listed in `sparse-checkout set`.
-    echo "[projects] Cloning tarang2p1-files -> $WORK (scoped to '$LICENSE_PRODUCT_FOLDER') …" >> /tmp/lab-crypto.log
+elif [[ -z "${BOOTSTRAP_TOKEN:-}" && ${#LICENSE_PRODUCT_FOLDERS[@]} -gt 0 && ! -d "$WORK/.git" ]]; then
+    # Local Docker Mode license scoped to one or more product folders —
+    # sparse-checkout just those subtrees (+ mywork/) instead of the whole
+    # repo. A plain `mv` of just the subfolders would discard .git (it lives
+    # at the clone root), breaking the documented `git add/commit/push`
+    # workflow — sparse-checkout keeps a real working tree while still only
+    # fetching the scoped content. --cone mode keeps root-level infra files
+    # (Makefile, .gitignore) present automatically alongside whatever's
+    # listed in `sparse-checkout set`. `git sparse-checkout set` natively
+    # accepts multiple paths, so bundled-folder products need no extra logic
+    # here beyond passing the whole array.
+    echo "[projects] Cloning tarang2p1-files -> $WORK (scoped to: ${LICENSE_PRODUCT_FOLDERS[*]}) …" >> /tmp/lab-crypto.log
     TMPCLONE=$(mktemp -d)
     if /usr/bin/git clone --no-checkout https://github.com/rioncoreacademy/tarang2p1-files.git "$TMPCLONE" \
             >> /tmp/lab-crypto.log 2>&1 \
         && ( cd "$TMPCLONE" \
              && git sparse-checkout init --cone \
-             && git sparse-checkout set "$LICENSE_PRODUCT_FOLDER" mywork \
+             && git sparse-checkout set "${LICENSE_PRODUCT_FOLDERS[@]}" mywork \
              && git checkout ) >> /tmp/lab-crypto.log 2>&1; then
-        if [[ -d "$TMPCLONE/$LICENSE_PRODUCT_FOLDER" ]]; then
+        MISSING_FOLDERS=()
+        for _f in "${LICENSE_PRODUCT_FOLDERS[@]}"; do
+            [[ -d "$TMPCLONE/$_f" ]] || MISSING_FOLDERS+=("$_f")
+        done
+        if [[ ${#MISSING_FOLDERS[@]} -eq 0 ]]; then
             mkdir -p "$WORK"
             shopt -s dotglob
             mv "$TMPCLONE"/* "$WORK"/ 2>>/tmp/lab-crypto.log
             shopt -u dotglob
             rmdir "$TMPCLONE" 2>/dev/null
-            echo "[projects] Clone complete (scoped to '$LICENSE_PRODUCT_FOLDER')." >> /tmp/lab-crypto.log
+            echo "[projects] Clone complete (scoped to: ${LICENSE_PRODUCT_FOLDERS[*]})." >> /tmp/lab-crypto.log
             find "$WORK" -type f -exec chmod a-w {} \; 2>/dev/null || true
         else
             rm -rf "$TMPCLONE"
             mkdir -p "$WORK"
             cat > "$WORK/LICENSE_LOCKED.txt" <<EOF
-This license is scoped to a project folder ("$LICENSE_PRODUCT_FOLDER") that
-could not be found in the lab content repository. Contact RionCore Academy
+This license is scoped to project folder(s) that could not be found in the
+lab content repository: ${MISSING_FOLDERS[*]}. Contact RionCore Academy
 support - this is a content configuration issue, not a problem with your
 license itself.
 EOF
             chmod 555 "$WORK"
-            echo "[projects] WARNING: product_folder '$LICENSE_PRODUCT_FOLDER' not found in repo — locked." >> /tmp/lab-crypto.log
+            echo "[projects] WARNING: product folder(s) not found in repo: ${MISSING_FOLDERS[*]} — locked." >> /tmp/lab-crypto.log
         fi
     else
         echo "[projects] WARNING: could not clone/sparse-checkout tarang2p1-files." >> /tmp/lab-crypto.log
@@ -406,7 +423,7 @@ if [[ "$IS_LOCAL_DOCKER_LICENSE_PATH" == "1" ]]; then
     umask 077
     printf '%s\n' "$LICENSE_ENCRYPTION_KEY" > "$HOME/.rbk_state"
     chmod 600 "$HOME/.rbk_state"
-    echo "[license] Decryption key delivered via license API (product_folder='${LICENSE_PRODUCT_FOLDER}')." >> /tmp/lab-crypto.log
+    echo "[license] Decryption key delivered via license API (product_folders='${LICENSE_PRODUCT_FOLDERS[*]}')." >> /tmp/lab-crypto.log
 else
     export CLASS_TOKEN="${CLASS_TOKEN:-vlsi2026}"
     /usr/local/bin/tarang2p1-key-init.sh >> /tmp/lab-crypto.log 2>&1 &
